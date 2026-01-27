@@ -1,0 +1,56 @@
+# Regras de Contexto do Projeto
+
+Este arquivo consolida as configurações de contexto do projeto. Siga rigorosamente as informações contidas em:
+
+- `rules/commits.md` - Padrões de commits e fluxo de trabalho Git
+- `README.md` - Estrutura do projeto, tecnologias e instruções de execução
+- `rules/professor.md` - Metodologia de ensino e desenvolvimento
+
+## Contexto do Projeto
+
+Este é um projeto de **Plataforma de Cursos Offline** desenvolvido como monorepo com:
+- **Backend**: Java 21 + Spring Boot 3 (Maven)
+- **Frontend**: TypeScript + React (Vite)
+- **DB**: PostgreSQL
+- **Infra**: Docker Compose
+
+## Regras de Commits
+
+Siga rigorosamente o padrão Conventional Commits definido em `rules/commits.md`:
+- Formato: `<type>(<scope>): <summary>`
+- Commits pequenos, frequentes e coerentes
+- 1 commit = 1 intenção clara
+- Não misturar backend+frontend no mesmo commit (exceto ajustes mínimos necessários)
+- Sempre rodar checagens locais antes de commitar (mvn test, npm run build/lint)
+
+## Metodologia de Ensino
+
+Ao trabalhar neste projeto, siga a metodologia definida em `rules/professor.md`:
+- Explicar conceitos antes de implementar (até 12 tópicos com analogias)
+- Fazer tour guiado do código após implementação
+- Criar documentação em `/learning` para cada bloco
+- Propor exercícios práticos e refatorações opcionais
+- Fornecer checklists de validação
+
+## Estrutura e Tecnologias
+
+Consulte `README.md` para:
+- Estrutura completa do projeto
+- Instruções de configuração e execução
+- Variáveis de ambiente necessárias
+- Roadmap e próximos passos
+
+## Regras Gerais
+
+- Sempre responder em **Português**
+- Manter qualidade profissional em todo código
+- Documentar decisões importantes
+- Seguir padrões de mercado e boas práticas
+- Criar commits seguindo o padrão estabelecido
+
+## Comentários no Código
+
+- **Minimizar ou eliminar comentários** no código-fonte. Poluição visual prejudica a leitura.
+- Preferir nomes de variáveis, métodos e classes autoexplicativos em vez de comentários.
+- Se o desenvolvedor tiver dúvidas, deve perguntar ao agente; não usar comentários como substituto.
+- Exceção: JSDoc/JavaDoc apenas quando ferramentas ou contratos públicos exigirem (APIs públicas, bibliotecas).

@@ -9,12 +9,20 @@ Plataforma privada de cursos com vídeos locais, desenvolvida com Spring Boot 3 
 ├── docker-compose.yml          # Orquestração dos serviços
 ├── .env.example               # Variáveis de ambiente de exemplo
 ├── README.md                  # Este arquivo
+├── learning/                  # Documentação de aprendizado
+│   ├── BLOCO-1-inicializacao-profissional.md
+│   └── COMO-ESTUDAR-COM-O-AGENTE.md
 ├── backend/                   # Aplicação Spring Boot
 │   ├── pom.xml
 │   ├── Dockerfile
 │   └── src/
 │       └── main/
 │           ├── java/com/plataforma/cursos/
+│           │   ├── PlataformaCursosApplication.java
+│           │   ├── controller/
+│           │   │   └── PingController.java
+│           │   └── config/
+│           │       └── SecurityConfig.java
 │           └── resources/
 │               └── application.yml
 └── frontend/                  # Aplicação React + Vite
@@ -24,6 +32,9 @@ Plataforma privada de cursos com vídeos locais, desenvolvida com Spring Boot 3 
     ├── Dockerfile
     ├── nginx.conf
     └── src/
+        ├── main.tsx
+        ├── App.tsx
+        └── index.css
 ```
 
 ## Pré-requisitos
@@ -87,11 +98,19 @@ Plataforma privada de cursos com vídeos locais, desenvolvida com Spring Boot 3 
    ```bash
    curl http://localhost:8080/actuator/health
    ```
+   **Resposta esperada:** `{"status":"UP"}`
 
-4. **Acesse a aplicação**:
+4. **Teste o endpoint de ping**:
+   ```bash
+   curl http://localhost:8080/api/v1/ping
+   ```
+   **Resposta esperada:** `{"status":"ok","message":"pong"}`
+
+5. **Acesse a aplicação**:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8080/api
    - Actuator Health: http://localhost:8080/actuator/health
+   - Ping Endpoint: http://localhost:8080/api/v1/ping
 
 ### Parar os serviços
 
@@ -149,16 +168,38 @@ Consulte o arquivo `.env.example` para ver todas as variáveis disponíveis. As 
 - `VIDEOS_PATH`: Caminho local para a pasta de vídeos
 - `CORS_ALLOWED_ORIGINS`: Origens permitidas para CORS
 
+## Aprendizado e Documentação
+
+Este projeto foi estruturado para aprendizado progressivo. Consulte a pasta `/learning` para:
+
+- **BLOCO-1-inicializacao-profissional.md**: Documentação completa do Bloco 1 com explicações, exercícios e checklist
+- **COMO-ESTUDAR-COM-O-AGENTE.md**: Guia de como usar este projeto para aprender Java/Spring Boot e React/TypeScript
+
+### Status Atual: Bloco 1 ✅
+
+**O que está funcionando:**
+- ✅ Backend Spring Boot rodando com endpoints `/actuator/health` e `/api/v1/ping`
+- ✅ Frontend React exibindo interface inicial
+- ✅ Docker Compose orquestrando PostgreSQL + Backend + Frontend
+- ✅ Documentação completa de aprendizado
+
 ## Próximos Passos
 
-Esta é a estrutura inicial do projeto. As próximas etapas incluem:
+**Bloco 2 (Próximo):** Primeira Entidade e CRUD Básico
+- Criar entidade `Curso` (id, nome, descrição)
+- Criar `CursoRepository` (Spring Data JPA)
+- Criar `CursoController` com CRUD completo
+- Frontend: listar cursos em uma tabela
 
-1. Implementação da autenticação (login com JWT)
-2. Indexação automática de vídeos do sistema de arquivos
-3. Player de vídeo com streaming (suporte a Range requests)
-4. Sistema de progresso por usuário/aula
-5. Funcionalidade "Continue assistindo"
-6. Busca por título de cursos
+**Roadmap Completo:**
+1. ✅ Bloco 1: Inicialização Profissional (concluído)
+2. Bloco 2: Primeira Entidade e CRUD Básico
+3. Bloco 3: Validações e Tratamento de Erros
+4. Bloco 4: Autenticação com JWT
+5. Bloco 5: Indexação de Vídeos
+6. Bloco 6: Player de Vídeo com Streaming
+7. Bloco 7: Sistema de Progresso
+8. Bloco 8: Busca e Filtros
 
 ## Tecnologias
 

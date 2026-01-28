@@ -1,5 +1,3 @@
-# Arquivos de contexto/regras (não commitados)
-commits.md
 
 # Java
 *.class
@@ -54,5 +52,3 @@ out/
 Thumbs.db
 .DS_Store
 
-# Rules
-rules/

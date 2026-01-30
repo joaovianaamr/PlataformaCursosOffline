@@ -186,6 +186,8 @@ npm run dev  # Inicia servidor em http://localhost:5173
 services:
   postgres:        # Container 1: Banco de dados
     image: postgres:16-alpine
+    # Porta não exposta externamente por segurança
+    # Acesso apenas via rede Docker interna
   
   backend:         # Container 2: API Java
     depends_on:
@@ -203,6 +205,7 @@ services:
 - `postgres:5432` = nome do serviço é usado como hostname dentro do Docker
 - `depends_on` = ordem de inicialização
 - `networks` = todos na mesma rede podem se comunicar
+- **Segurança:** PostgreSQL não expõe porta 5432 externamente, apenas acessível via rede Docker interna
 
 ### 3.7 Maven (pom.xml)
 
@@ -524,6 +527,8 @@ curl http://localhost:3000
 
 **Verificar se PostgreSQL está rodando:**
 ```bash
+# PostgreSQL não está acessível externamente (porta 5432 não exposta)
+# Acesso apenas via docker exec (recomendado para segurança)
 docker exec -it plataforma-postgres psql -U plataforma -d plataforma_cursos -c "SELECT version();"
 ```
 
@@ -582,6 +587,13 @@ org.postgresql.util.PSQLException: Connection to localhost:5432 refused
 1. PostgreSQL não iniciou ainda
 2. Credenciais erradas
 3. Nome do banco errado
+4. Tentativa de conexão externa (porta 5432 não está exposta por segurança)
+
+**Nota de Segurança:**
+- A porta 5432 do PostgreSQL não está exposta externamente por padrão
+- Isso impede conexões não autorizadas de fora do Docker
+- Para acessar o PostgreSQL, use: `docker exec -it plataforma-postgres psql -U plataforma -d plataforma_cursos`
+- O backend conecta corretamente via rede Docker interna usando o nome do serviço `postgres:5432`
 
 **Como diagnosticar:**
 ```bash
@@ -591,14 +603,14 @@ docker-compose ps postgres
 # Ver logs do PostgreSQL
 docker-compose logs postgres
 
-# Testar conexão manualmente
+# Testar conexão manualmente (via docker exec)
 docker exec -it plataforma-postgres psql -U plataforma -d plataforma_cursos
 ```
 
 **Solução:**
 - Aguardar PostgreSQL ficar saudável (healthcheck)
 - Verificar variáveis `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
-- Verificar `SPRING_DATASOURCE_URL` no backend
+- Verificar `SPRING_DATASOURCE_URL` no backend (deve usar `postgres:5432`, não `localhost:5432`)
 
 ### Erro 3: Frontend não carrega
 
@@ -838,6 +850,12 @@ Use este checklist para garantir que tudo está funcionando:
 - [ ] Backend e Frontend estão na mesma rede Docker
 - [ ] Frontend consegue fazer requisições para backend (se configurado)
 - [ ] Variáveis de ambiente estão sendo lidas corretamente
+
+### ✅ Segurança
+
+- [ ] PostgreSQL não está acessível externamente (porta 5432 não exposta)
+- [ ] Acesso ao banco apenas via rede Docker interna
+- [ ] Backend conecta corretamente via nome do serviço `postgres:5432`
 
 ### ✅ Documentação
 

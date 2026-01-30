@@ -168,6 +168,8 @@ Consulte o arquivo `.env.example` para ver todas as variáveis disponíveis. As 
 - `VIDEOS_PATH`: Caminho local para a pasta de vídeos
 - `CORS_ALLOWED_ORIGINS`: Origens permitidas para CORS
 
+**Nota de Segurança:** O PostgreSQL não expõe a porta 5432 externamente por padrão. O acesso ao banco é feito apenas através da rede Docker interna. Para acessar o PostgreSQL manualmente, use: `docker exec -it plataforma-postgres psql -U plataforma -d plataforma_cursos`
+
 ## Aprendizado e Documentação
 
 Este projeto foi estruturado para aprendizado progressivo. Consulte a pasta `/learning` para:

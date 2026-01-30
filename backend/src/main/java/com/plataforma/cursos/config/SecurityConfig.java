@@ -17,6 +17,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/v1/ping").permitAll()
+                .requestMatchers("/api/v1/info").permitAll()
                 .anyRequest().authenticated()
             );
         return http.build();

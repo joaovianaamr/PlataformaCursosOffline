@@ -10,13 +10,14 @@ Criar a base de uma aplicação Spring Boot profissional:
 
 **Resultado esperado:** Você consegue rodar o backend, acessar os endpoints e entender como o Spring Boot funciona.
 
-## 2. O que eu devo aprender neste bloco (5 itens)
+## 2. O que eu devo aprender neste bloco (6 itens)
 
 1. **Estrutura de um projeto Spring Boot**: Como o Maven organiza o código Java e onde cada coisa fica
 2. **Anotações básicas do Spring**: `@SpringBootApplication`, `@RestController`, `@GetMapping` - o que fazem e por quê
 3. **Actuator Health Endpoint**: Endpoint pré-configurado para monitoramento
 4. **Maven (pom.xml)**: Gerenciador de dependências e build para Java
 5. **application.yml**: Arquivo de configuração do Spring Boot
+6. **Spring Security e rotas públicas**: Como configurar quais endpoints podem ser acessados sem autenticação
 
 ## 3. Conceitos explicados (explicação simples + exemplo)
 
@@ -129,10 +130,21 @@ public Map<String, String> ping() {  # Já converte para JSON
 </dependencies>
 ```
 
+**Dependências principais usadas neste projeto:**
+- `spring-boot-starter-web` = Cria servidor HTTP e endpoints REST
+- `spring-boot-starter-data-jpa` = Integração com banco de dados (PostgreSQL)
+- `spring-boot-starter-security` = **Spring Security** - proteção de rotas e autenticação
+- `spring-boot-starter-actuator` = Endpoints de monitoramento (`/actuator/health`)
+- `spring-boot-starter-validation` = Validação de dados de entrada
+- `postgresql` = Driver para conectar ao PostgreSQL
+- `jjwt-*` = Biblioteca para trabalhar com JWT (JSON Web Tokens)
+- `lombok` = Reduz código boilerplate (getters, setters, etc)
+
 **Comandos principais:**
 - `mvn clean install` = instala dependências + compila
 - `mvn spring-boot:run` = roda a aplicação
 - `mvn test` = roda testes
+- `mvn clean compile` = compila sem instalar
 
 ### 3.5 application.yml
 
@@ -152,6 +164,61 @@ spring:
 - `spring.datasource.url` = propriedade aninhada
 - `${VAR:default}` = usa variável de ambiente ou valor padrão
 
+**Configurações principais no projeto:**
+
+**1. Banco de dados (PostgreSQL):**
+```yaml
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/plataforma_cursos}
+    username: ${SPRING_DATASOURCE_USERNAME:plataforma}
+    password: ${SPRING_DATASOURCE_PASSWORD:plataforma123}
+```
+- Define como conectar ao PostgreSQL
+- Usa variáveis de ambiente ou valores padrão
+
+**2. JPA/Hibernate:**
+```yaml
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Valida schema, não cria/modifica tabelas
+    show-sql: false       # Não mostra SQL no console (mude para true para debug)
+```
+- `ddl-auto: validate` = Verifica se tabelas existem, mas não cria automaticamente
+- `show-sql: true` = Útil para debug, mostra SQL executado
+
+**3. Servidor:**
+```yaml
+server:
+  port: ${SERVER_PORT:8080}  # Porta do servidor (padrão: 8080)
+```
+
+**4. JWT (JSON Web Tokens):**
+```yaml
+jwt:
+  secret: ${JWT_SECRET:your-secret-key-change-in-production-min-256-bits}
+  expiration: ${JWT_EXPIRATION:86400000}  # 24 horas em milissegundos
+```
+- Configuração para autenticação com JWT (será usado futuramente)
+
+**5. CORS (Cross-Origin Resource Sharing):**
+```yaml
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+```
+- Define quais origens podem acessar a API (frontend React)
+
+**6. Logging:**
+```yaml
+logging:
+  level:
+    com.plataforma.cursos: DEBUG  # Logs detalhados da aplicação
+    org.springframework.security: DEBUG  # Logs de segurança
+```
+- Controla nível de detalhamento dos logs
+- `DEBUG` = muito detalhado, `INFO` = menos detalhado
+
 ### 3.6 Estrutura de Pastas Java
 
 **O que é:** Convenção Maven de onde colocar código fonte, recursos, testes.
@@ -161,9 +228,14 @@ spring:
 src/
   main/
     java/com/plataforma/cursos/    # Código fonte (.java)
-      Application.java
-      controller/
-      service/
+      PlataformaCursosApplication.java  # Classe principal
+      controller/                  # Endpoints REST (PingController, InfoController)
+      service/                     # Lógica de negócio (futuro)
+      repository/                  # Acesso ao banco de dados (futuro)
+      model/                       # Entidades JPA (futuro)
+      dto/                         # Data Transfer Objects (futuro)
+      config/                      # Configurações (SecurityConfig, etc)
+      exception/                   # Tratamento de erros (futuro)
     resources/                     # Configurações (.yml, .properties)
       application.yml
   test/
@@ -171,6 +243,78 @@ src/
 ```
 
 **Por quê:** Maven compila tudo em `src/main/java` e coloca em `target/classes`.
+
+**Camadas da aplicação (arquitetura):**
+- **Controller** (`controller/`) = Recebe requisições HTTP, valida entrada, retorna resposta
+- **Service** (`service/`) = Contém a lógica de negócio da aplicação
+- **Repository** (`repository/`) = Acesso ao banco de dados (Spring Data JPA)
+- **Model** (`model/`) = Entidades que representam tabelas do banco
+- **DTO** (`dto/`) = Objetos para transferir dados entre camadas
+- **Config** (`config/`) = Configurações (Security, CORS, etc)
+- **Exception** (`exception/`) = Tratamento centralizado de erros
+
+### 3.7 Spring Security e SecurityConfig
+
+**O que é:** Configuração que define quais rotas podem ser acessadas sem autenticação e como a segurança funciona na aplicação.
+
+**Analogia Python:** É como ter um guarda na porta que verifica se você tem permissão para entrar. Por padrão, o Spring Security bloqueia TODAS as rotas. Você precisa explicitamente permitir rotas públicas.
+
+**Por que importa:** Sem configurar rotas públicas, você receberá erro 401 (Unauthorized) ao tentar acessar qualquer endpoint, mesmo os que deveriam ser públicos.
+
+**Exemplo:**
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())  // Desabilita CSRF (comum em APIs REST)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/actuator/**").permitAll()      // Rotas públicas
+                .requestMatchers("/api/v1/ping").permitAll()
+                .requestMatchers("/api/v1/info").permitAll()
+                .anyRequest().authenticated()  // Resto precisa autenticação
+            );
+        return http.build();
+    }
+}
+```
+
+**O que acontece:**
+- `@Configuration` = "Esta classe configura algo"
+- `@EnableWebSecurity` = "Ativa Spring Security nesta aplicação"
+- `csrf.disable()` = "Desabilita proteção CSRF" (comum em APIs REST que usam JWT)
+- `requestMatchers("/api/v1/ping").permitAll()` = "Permite acesso sem autenticação"
+- `.anyRequest().authenticated()` = "Todas as outras rotas precisam de autenticação"
+
+**Regra importante:** Quando criar um novo endpoint público, você DEVE adicioná-lo em `requestMatchers().permitAll()`. Caso contrário, receberá erro 401 (Unauthorized).
+
+**Comparação Python:**
+```python
+# Python (Flask) - você precisa criar decorator manualmente
+from functools import wraps
+
+def public_route(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/api/v1/ping')
+@public_route
+def ping():
+    return jsonify({"status": "ok"})
+
+# Java (Spring Boot) - configuração centralizada
+# Todas as rotas públicas em um lugar só (SecurityConfig)
+```
+
+**O que é CSRF?**
+- Cross-Site Request Forgery = ataque onde um site malicioso faz requisições em seu nome
+- Em APIs REST com JWT, geralmente desabilitamos porque o token já protege
+- Em aplicações web tradicionais (com cookies), geralmente mantemos habilitado
 
 ## 4. O que foi implementado (lista)
 
@@ -211,6 +355,12 @@ src/
 - **O que faz:** Configurações da aplicação (porta, banco, etc)
 - **Por que importa:** Define como a aplicação se conecta ao PostgreSQL
 - **Analogia:** É o `.env` + `config.py` juntos
+
+**`backend/src/main/java/com/plataforma/cursos/config/SecurityConfig.java`**
+- **O que faz:** Configura quais rotas são públicas (sem autenticação) e quais precisam de autenticação
+- **Por que importa:** Sem ele, todas as rotas ficam bloqueadas e você recebe erro 401
+- **Analogia:** É como uma lista de convidados VIP - só quem está na lista pode entrar sem autenticação
+- **Importante:** Sempre que criar um novo endpoint público, adicione-o aqui com `requestMatchers().permitAll()`
 
 ## 6. Como rodar e testar (comandos)
 
@@ -412,6 +562,58 @@ lsof -i :8080
 - Parar containers: `docker-compose down`
 - Verificar containers órfãos: `docker ps -a`
 
+### Erro 5: "401 Unauthorized" ao acessar endpoint
+
+**Sintomas:**
+```
+HTTP/1.1 401 Unauthorized
+{
+  "timestamp": "2024-01-01T12:00:00",
+  "status": 401,
+  "error": "Unauthorized",
+  "path": "/api/v1/info"
+}
+```
+
+**Ou no curl:**
+```bash
+curl http://localhost:8080/api/v1/info
+# Retorna: {"timestamp":"...","status":401,"error":"Unauthorized",...}
+```
+
+**Causa:** A rota não está configurada como pública no `SecurityConfig.java`. Por padrão, o Spring Security bloqueia todas as rotas que não estão explicitamente permitidas.
+
+**Como diagnosticar:**
+1. Verifique se o endpoint existe no controller
+2. Verifique se a rota está em `requestMatchers().permitAll()` no `SecurityConfig.java`
+3. Verifique os logs do Spring Boot - geralmente mostra tentativas de acesso bloqueadas
+
+**Solução:**
+Adicione a rota no `SecurityConfig.java`:
+```java
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers("/actuator/**").permitAll()
+    .requestMatchers("/api/v1/ping").permitAll()
+    .requestMatchers("/api/v1/info").permitAll()  // ← Adicione aqui
+    .anyRequest().authenticated()
+);
+```
+
+**Importante:** Após modificar `SecurityConfig.java`, você precisa reiniciar a aplicação para as mudanças terem efeito.
+
+### Erro 6: "403 Forbidden" mesmo com rota permitida
+
+**Sintomas:**
+```
+HTTP/1.1 403 Forbidden
+```
+
+**Causa:** Geralmente relacionado a CSRF (Cross-Site Request Forgery) ou configuração incorreta de CORS.
+
+**Solução:**
+- Verifique se `csrf.disable()` está configurado no `SecurityConfig` (comum em APIs REST)
+- Verifique configurações de CORS no `application.yml` ou em uma classe de configuração separada
+
 ## 8. Exercícios para eu fazer (1 exercício)
 
 ### Exercício 1: Adicionar novo endpoint "info"
@@ -483,6 +685,8 @@ Use este checklist para garantir que tudo está funcionando:
 - [ ] Endpoint `/api/v1/info` retorna informações da aplicação
 - [ ] Logs mostram "Started PlataformaCursosApplication"
 - [ ] Backend conecta no PostgreSQL (sem erros de conexão nos logs)
+- [ ] Endpoints públicos funcionam sem autenticação (sem erro 401)
+- [ ] `SecurityConfig.java` está configurado corretamente com rotas públicas
 
 ### ✅ Código
 
@@ -501,6 +705,7 @@ Após completar este bloco, você deve conseguir explicar:
 3. **O que é Actuator:** Endpoints de monitoramento pré-configurados pelo Spring Boot
 4. **Estrutura básica de projeto Java:** `src/main/java` para código, `src/main/resources` para config
 5. **Como Maven funciona:** Gerenciador de dependências e build para Java
+6. **Como Spring Security funciona:** Por padrão bloqueia todas as rotas; você precisa permitir rotas públicas explicitamente no `SecurityConfig`
 
 ## O que revisar se travar
 
@@ -509,6 +714,7 @@ Se você travar em algum ponto, revise:
 - **Backend não inicia:** Verifique logs (`docker-compose logs backend`), veja se PostgreSQL está pronto, verifique `application.yml`
 - **Não entende anotações:** Leia a seção "Conceitos explicados" novamente, pesquise `@SpringBootApplication` no Google
 - **Maven não funciona:** Verifique se Maven está instalado (`mvn --version`), verifique conexão com internet
+- **Erro 401 ao acessar endpoint:** Verifique se a rota está em `requestMatchers().permitAll()` no `SecurityConfig.java` e reinicie a aplicação
 
 ## Próximo bloco sugerido
 

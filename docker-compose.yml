@@ -8,8 +8,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-plataforma}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-plataforma123}
       POSTGRES_DB: ${POSTGRES_DB:-plataforma_cursos}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    # Porta removida para impedir conexões externas
+    # O backend acessa através da rede Docker interna
+    # ports:
+    #   - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

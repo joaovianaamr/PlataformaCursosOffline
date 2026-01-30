@@ -101,6 +101,114 @@ Estes arquivos são criados e editados **pelo desenvolvedor** e devem ser versio
 - **Edite quando:** Adicionar/remover dependências, criar novos scripts
 - **Versionar no Git?** ✅ Sim (essencial)
 
+## 🔄 Diferença entre `package.json` e `package-lock.json`
+
+Esta é uma dúvida comum! Ambos são importantes, mas têm funções diferentes:
+
+### `package.json` (Configurado Manualmente)
+
+**O que é:**
+- Manifesto do projeto que você edita manualmente
+- Define dependências com versões flexíveis usando `^` ou `~`
+- Contém informações do projeto, scripts e configurações
+
+**Exemplo do seu projeto:**
+```json
+{
+  "dependencies": {
+    "axios": "^1.6.2",        // ^ = aceita 1.6.2 até 2.0.0
+    "react": "^18.2.0",       // ^ = aceita 18.2.0 até 19.0.0
+    "react-dom": "^18.2.0"
+  }
+}
+```
+
+**Características:**
+- ✅ Você edita manualmente
+- ✅ Versões flexíveis (`^1.6.2` significa "qualquer 1.x.x")
+- ✅ Apenas dependências diretas
+- ✅ Arquivo pequeno (~34 linhas)
+- ✅ Define o que você quer, não o que foi instalado
+
+### `package-lock.json` (Gerado Automaticamente)
+
+**O que é:**
+- Lock file gerado automaticamente pelo npm
+- Trava versões exatas de todas as dependências (diretas e indiretas)
+- Garante builds reproduzíveis
+
+**Exemplo do seu projeto:**
+```json
+{
+  "axios": {
+    "version": "1.13.4",      // Versão EXATA instalada
+    "resolved": "https://registry.npmjs.org/axios/-/axios-1.13.4.tgz",
+    "integrity": "sha512-1wVkUaAO6WyaYtCkcYCOx12ZgpGf9Zif+qXa4n+oYzK558YryKqiL6UWwd5DgiH3VRW0GYhTZQ/vlgJrCoNQlg=="
+  }
+}
+```
+
+**Características:**
+- ❌ NÃO edite manualmente (deixe o npm gerenciar)
+- ✅ Versões exatas (`1.13.4` - sem flexibilidade)
+- ✅ Todas as dependências (diretas + indiretas)
+- ✅ Arquivo grande (~3659 linhas)
+- ✅ Define o que foi realmente instalado
+
+### Comparação Prática
+
+| Aspecto | `package.json` | `package-lock.json` |
+|---------|----------------|---------------------|
+| **Tamanho** | ~34 linhas | ~3659 linhas |
+| **Edição** | Manual | Automático |
+| **Versões** | Flexíveis (`^1.6.2`) | Exatas (`1.13.4`) |
+| **Dependências** | Apenas diretas | Diretas + indiretas |
+| **Versionar no Git?** | ✅ Sim | ✅ Sim (importante) |
+| **Quando atualiza?** | Quando você edita | Quando roda `npm install` |
+
+### Por que ambos são importantes?
+
+#### ❌ Cenário sem `package-lock.json`:
+```bash
+# Desenvolvedor A instala em janeiro
+npm install  # Instala react 18.2.0
+
+# Desenvolvedor B instala em fevereiro
+npm install  # Instala react 18.3.1 (nova versão disponível)
+# ❌ Problema: versões diferentes podem causar bugs!
+```
+
+#### ✅ Cenário com `package-lock.json`:
+```bash
+# Desenvolvedor A instala em janeiro
+npm install  # Instala react 18.2.0 e cria package-lock.json
+
+# Desenvolvedor B instala em fevereiro
+npm install  # Lê package-lock.json e instala EXATAMENTE react 18.2.0
+# ✅ Sucesso: versões idênticas garantem builds consistentes!
+```
+
+### Resumo Visual
+
+```
+package.json (você edita)
+├── "react": "^18.2.0"  ← Você define (flexível)
+└── "axios": "^1.6.2"   ← Você define (flexível)
+
+package-lock.json (npm gera automaticamente)
+├── react: 18.3.1       ← npm escolheu esta versão exata
+├── axios: 1.13.4       ← npm escolheu esta versão exata
+├── react-dom: 18.3.1  ← dependência indireta
+└── ... 3659 linhas de dependências exatas
+```
+
+### Regra de Ouro
+
+- **`package.json`**: Você edita para adicionar/remover dependências
+- **`package-lock.json`**: Nunca edite manualmente, deixe o npm gerenciar
+
+**Ambos devem ser commitados no Git** para garantir que todos os desenvolvedores usem as mesmas versões exatas das dependências.
+
 #### `tsconfig.json`
 - **O que é:** Configuração do compilador TypeScript
 - **Edite quando:** Mudar opções de compilação, paths, strict mode
@@ -189,6 +297,114 @@ Estes arquivos são criados e editados **pelo desenvolvedor** e devem ser versio
 - **O que é:** Vídeos do curso (se houver)
 - **Edite quando:** Adicionar novos vídeos
 - **Versionar no Git?** ⚠️ Depende (vídeos são grandes - considere Git LFS ou armazenamento externo)
+
+## 🔄 Diferença entre `package.json` e `package-lock.json`
+
+Esta é uma dúvida comum! Ambos são importantes, mas têm funções diferentes:
+
+### `package.json` (Configurado Manualmente)
+
+**O que é:**
+- Manifesto do projeto que você edita manualmente
+- Define dependências com versões flexíveis usando `^` ou `~`
+- Contém informações do projeto, scripts e configurações
+
+**Exemplo do seu projeto:**
+```json
+{
+  "dependencies": {
+    "axios": "^1.6.2",        // ^ = aceita 1.6.2 até 2.0.0
+    "react": "^18.2.0",       // ^ = aceita 18.2.0 até 19.0.0
+    "react-dom": "^18.2.0"
+  }
+}
+```
+
+**Características:**
+- ✅ Você edita manualmente
+- ✅ Versões flexíveis (`^1.6.2` significa "qualquer 1.x.x")
+- ✅ Apenas dependências diretas
+- ✅ Arquivo pequeno (~34 linhas)
+- ✅ Define o que você quer, não o que foi instalado
+
+### `package-lock.json` (Gerado Automaticamente)
+
+**O que é:**
+- Lock file gerado automaticamente pelo npm
+- Trava versões exatas de todas as dependências (diretas e indiretas)
+- Garante builds reproduzíveis
+
+**Exemplo do seu projeto:**
+```json
+{
+  "axios": {
+    "version": "1.13.4",      // Versão EXATA instalada
+    "resolved": "https://registry.npmjs.org/axios/-/axios-1.13.4.tgz",
+    "integrity": "sha512-1wVkUaAO6WyaYtCkcYCOx12ZgpGf9Zif+qXa4n+oYzK558YryKqiL6UWwd5DgiH3VRW0GYhTZQ/vlgJrCoNQlg=="
+  }
+}
+```
+
+**Características:**
+- ❌ NÃO edite manualmente (deixe o npm gerenciar)
+- ✅ Versões exatas (`1.13.4` - sem flexibilidade)
+- ✅ Todas as dependências (diretas + indiretas)
+- ✅ Arquivo grande (~3659 linhas)
+- ✅ Define o que foi realmente instalado
+
+### Comparação Prática
+
+| Aspecto | `package.json` | `package-lock.json` |
+|---------|----------------|---------------------|
+| **Tamanho** | ~34 linhas | ~3659 linhas |
+| **Edição** | Manual | Automático |
+| **Versões** | Flexíveis (`^1.6.2`) | Exatas (`1.13.4`) |
+| **Dependências** | Apenas diretas | Diretas + indiretas |
+| **Versionar no Git?** | ✅ Sim | ✅ Sim (importante) |
+| **Quando atualiza?** | Quando você edita | Quando roda `npm install` |
+
+### Por que ambos são importantes?
+
+#### ❌ Cenário sem `package-lock.json`:
+```bash
+# Desenvolvedor A instala em janeiro
+npm install  # Instala react 18.2.0
+
+# Desenvolvedor B instala em fevereiro
+npm install  # Instala react 18.3.1 (nova versão disponível)
+# ❌ Problema: versões diferentes podem causar bugs!
+```
+
+#### ✅ Cenário com `package-lock.json`:
+```bash
+# Desenvolvedor A instala em janeiro
+npm install  # Instala react 18.2.0 e cria package-lock.json
+
+# Desenvolvedor B instala em fevereiro
+npm install  # Lê package-lock.json e instala EXATAMENTE react 18.2.0
+# ✅ Sucesso: versões idênticas garantem builds consistentes!
+```
+
+### Resumo Visual
+
+```
+package.json (você edita)
+├── "react": "^18.2.0"  ← Você define (flexível)
+└── "axios": "^1.6.2"   ← Você define (flexível)
+
+package-lock.json (npm gera automaticamente)
+├── react: 18.3.1       ← npm escolheu esta versão exata
+├── axios: 1.13.4       ← npm escolheu esta versão exata
+├── react-dom: 18.3.1  ← dependência indireta
+└── ... 3659 linhas de dependências exatas
+```
+
+### Regra de Ouro
+
+- **`package.json`**: Você edita para adicionar/remover dependências
+- **`package-lock.json`**: Nunca edite manualmente, deixe o npm gerenciar
+
+**Ambos devem ser commitados no Git** para garantir que todos os desenvolvedores usem as mesmas versões exatas das dependências.
 
 ## 🔍 Como Identificar Rapidamente
 

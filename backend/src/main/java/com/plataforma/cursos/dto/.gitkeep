@@ -1,0 +1,3 @@
+# DTO Layer
+
+Esta pasta contém os Data Transfer Objects (DTOs) usados para transferência de dados entre camadas.

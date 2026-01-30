@@ -1,0 +1,3 @@
+# Repository Layer
+
+Esta pasta contém as interfaces de repositório (Spring Data JPA) para acesso aos dados.

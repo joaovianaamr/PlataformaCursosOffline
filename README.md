@@ -19,10 +19,16 @@ Plataforma privada de cursos com vídeos locais, desenvolvida com Spring Boot 3 
 │       └── main/
 │           ├── java/com/plataforma/cursos/
 │           │   ├── PlataformaCursosApplication.java
+│           │   ├── config/
+│           │   │   └── SecurityConfig.java
 │           │   ├── controller/
+│           │   │   ├── InfoController.java
 │           │   │   └── PingController.java
-│           │   └── config/
-│           │       └── SecurityConfig.java
+│           │   ├── service/          # Lógica de negócio
+│           │   ├── repository/       # Interfaces JPA Repository
+│           │   ├── model/            # Entidades JPA
+│           │   ├── dto/              # Data Transfer Objects
+│           │   └── exception/        # Tratamento de exceções
 │           └── resources/
 │               └── application.yml
 └── frontend/                  # Aplicação React + Vite

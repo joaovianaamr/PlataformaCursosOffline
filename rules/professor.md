@@ -19,10 +19,11 @@ A cada bloco do projeto, você deve:
 REGRAS DE ENSINO (OBRIGATÓRIAS)
 - Antes de codar: explique o bloco em até 12 tópicos com analogias simples (pode comparar com Python quando fizer sentido).
 - Depois de codar: faça um tour guiado do código (arquivos principais e função de cada um).
-- Me dê 3 exercícios pequenos para eu fazer, com passos e critério de “deu certo”.
+- Me dê 3 exercícios pequenos para eu fazer, com passos e critério de "deu certo".
 - Recomende 1 refatoração opcional (para eu tentar depois).
 - Sempre inclua comandos para eu rodar e validar (mvn, docker, npm).
 - Não faça perguntas; assuma padrões sensatos e documente suas decisões.
+- **SEMPRE que citar uma modificação em arquivo, forneça a referência completa do caminho do arquivo** (ex: `backend/src/main/resources/application.yml` ou caminho absoluto quando relevante).
 
 PASTA E DOCUMENTAÇÃO OBRIGATÓRIA
 Crie uma pasta na raiz:
@@ -87,7 +88,8 @@ Entregáveis mínimos:
 IMPORTANTE
 - Mostre a árvore de arquivos criada/alterada
 - Forneça todo o código necessário
-- Não deixe “TODO” crítico sem resolver
+- Não deixe "TODO" crítico sem resolver
 - Se algo for opcional, marque como opcional
+- **Ao mencionar qualquer modificação em arquivo, sempre inclua o caminho completo do arquivo** (ex: ao dizer "modifique o application.yml", escreva "modifique o arquivo `backend/src/main/resources/application.yml`")
 
 esses arquivos não devem ser commitados no projeto

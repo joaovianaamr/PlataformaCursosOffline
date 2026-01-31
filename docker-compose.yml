@@ -28,6 +28,7 @@ services:
       dockerfile: Dockerfile
     container_name: plataforma-backend
     environment:
+      APP_NAME: ${APP_NAME:-Plataforma de Cursos Offline}
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-plataforma_cursos}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-plataforma}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-plataforma123}

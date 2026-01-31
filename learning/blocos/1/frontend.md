@@ -312,7 +312,7 @@ curl http://localhost:3000
 **Solução:**
 - Verificar logs de build do frontend
 - Rebuild: `docker-compose up -d --build frontend`
-- Verificar `FRONTEND_PORT` no `.env`
+- Verificar `FRONTEND_PORT` no arquivo `.env` (raiz do projeto)
 
 ### Erro 2: npm install falha
 
@@ -354,7 +354,7 @@ error TS2304: Cannot find name 'X'
 
 **Solução:**
 - Verificar imports
-- Verificar `tsconfig.json`
+- Verificar o arquivo `frontend/tsconfig.json`
 - Instalar dependências faltantes: `npm install`
 
 ### Erro 4: "Port already in use"
@@ -370,21 +370,21 @@ Error: listen EADDRINUSE: address already in use :::5173
 
 **Solução:**
 - Parar processo que usa a porta
-- Mudar porta no `vite.config.ts`
+- Mudar porta no arquivo `frontend/vite.config.ts`
 - Verificar processos: `lsof -i :5173` (Linux/Mac) ou `netstat -ano | findstr :5173` (Windows)
 
 ## 8. Exercícios para eu fazer
 
 **Nenhum exercício** - O frontend será implementado completamente pelo agente conforme necessário.
 
-**Nota:** O exercício 2 (adicionar data atual) já foi implementado pelo agente. O componente `App.tsx` agora exibe a data atual formatada em pt-BR.
+**Nota:** O exercício 2 (adicionar data atual) já foi implementado pelo agente. O componente no arquivo `frontend/src/App.tsx` agora exibe a data atual formatada em pt-BR.
 
 ## 9. Refatoração opcional (1 sugestão)
 
 ### Extrair data para variável
 
 **O que fazer:**
-- Extrair `new Date().toLocaleDateString('pt-BR')` para uma variável:
+- No arquivo `frontend/src/App.tsx`, extrair `new Date().toLocaleDateString('pt-BR')` para uma variável:
   ```tsx
   function App() {
     const dataAtual = new Date().toLocaleDateString('pt-BR');
@@ -443,7 +443,7 @@ Se você travar em algum ponto, revise:
 
 - **Frontend não carrega:** Verifique logs (`docker-compose logs frontend`), veja se compilou sem erros, verifique porta
 - **Não entende JSX:** Leia a seção "Conceitos explicados" novamente, pesquise "JSX React" no Google
-- **TypeScript errors:** Verifique imports, verifique `tsconfig.json`, instale dependências faltantes
+- **TypeScript errors:** Verifique imports, verifique o arquivo `frontend/tsconfig.json`, instale dependências faltantes
 
 ## Próximo bloco sugerido
 

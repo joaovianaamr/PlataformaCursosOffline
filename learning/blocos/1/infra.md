@@ -170,12 +170,12 @@ volumes:
 
 ### Infraestrutura
 
-**`docker-compose.yml`**
+**`docker-compose.yml` (raiz do projeto)**
 - **O que faz:** Orquestra PostgreSQL + Backend + Frontend
 - **Por que importa:** Um comando sobe tudo integrado
 - **Analogia:** É um script que sobe todos os serviços
 
-**`.env` (a ser criado)**
+**`.env` (raiz do projeto, a ser criado)**
 - **O que faz:** Variáveis de ambiente (senhas, URLs, etc)
 - **Por que importa:** Configurações sensíveis não vão no código
 - **Analogia:** É o `.env` do Python
@@ -282,8 +282,8 @@ docker exec -it plataforma-postgres psql -U plataforma -d plataforma_cursos
 
 **Solução:**
 - Aguardar PostgreSQL ficar saudável (healthcheck)
-- Verificar variáveis `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
-- Verificar `SPRING_DATASOURCE_URL` no backend (deve usar `postgres:5432`, não `localhost:5432`)
+- Verificar variáveis `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` no arquivo `docker-compose.yml` ou `.env`
+- Verificar `SPRING_DATASOURCE_URL` no backend (arquivo `docker-compose.yml` ou `backend/src/main/resources/application.yml`) - deve usar `postgres:5432`, não `localhost:5432`
 
 ### Erro 2: "Port already in use"
 
@@ -306,7 +306,7 @@ lsof -i :8080
 ```
 
 **Solução:**
-- Parar processo que usa a porta ou mudar porta no `.env`
+- Parar processo que usa a porta ou mudar porta no arquivo `.env` (raiz do projeto)
 - Parar containers: `docker-compose down`
 - Verificar containers órfãos: `docker ps -a`
 
@@ -337,7 +337,7 @@ docker exec plataforma-postgres pg_isready -U plataforma
 **Solução:**
 - Verificar logs para erro específico
 - Aumentar recursos do Docker (memória, CPU)
-- Verificar se porta 5432 não está em uso
+- Verificar se porta 5432 não está em uso (pode ser configurada no arquivo `docker-compose.yml`)
 
 ## 8. Exercícios para eu fazer (1 exercício)
 
@@ -346,9 +346,9 @@ docker exec plataforma-postgres pg_isready -U plataforma
 **Objetivo:** Configurar o nome da aplicação via variável de ambiente.
 
 **Passos:**
-1. No `docker-compose.yml`, adicione uma variável `APP_NAME` no serviço `backend`
-2. No `application.yml`, use `${APP_NAME:Plataforma de Cursos}` para `spring.application.name`
-3. Crie um arquivo `.env` na raiz com `APP_NAME=Minha Plataforma`
+1. No arquivo `docker-compose.yml` (raiz do projeto), adicione uma variável `APP_NAME` no serviço `backend`
+2. No arquivo `backend/src/main/resources/application.yml`, use `${APP_NAME:Plataforma de Cursos}` para `spring.application.name`
+3. Crie um arquivo `.env` na raiz do projeto com `APP_NAME=Minha Plataforma`
 4. Reinicie: `docker-compose down && docker-compose up -d`
 
 **Critério de "deu certo":**
@@ -362,7 +362,7 @@ docker exec plataforma-postgres pg_isready -U plataforma
 ### Organizar variáveis de ambiente em seções
 
 **O que fazer:**
-- No `docker-compose.yml`, agrupe variáveis de ambiente por categoria:
+- No arquivo `docker-compose.yml` (raiz do projeto), agrupe variáveis de ambiente por categoria:
   ```yaml
   environment:
     # Database

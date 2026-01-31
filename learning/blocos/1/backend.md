@@ -480,7 +480,7 @@ lsof -i :8080                  # Linux/Mac
 
 **Solução:**
 - Se container não está rodando: `docker-compose up -d backend`
-- Se porta em uso: mude `BACKEND_PORT` no `.env` ou pare o processo que usa a porta
+- Se porta em uso: mude `BACKEND_PORT` no arquivo `.env` (raiz do projeto) ou pare o processo que usa a porta
 - Se erro nos logs: leia a mensagem de erro completa
 
 ### Erro 2: "Cannot connect to database"
@@ -510,8 +510,8 @@ docker-compose logs backend
 
 **Solução:**
 - Aguardar PostgreSQL ficar saudável (healthcheck)
-- Verificar variáveis `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
-- Verificar `SPRING_DATASOURCE_URL` no backend (deve usar `postgres:5432`, não `localhost:5432`)
+- Verificar variáveis `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` no arquivo `docker-compose.yml` ou `.env`
+- Verificar `SPRING_DATASOURCE_URL` no backend (arquivo `docker-compose.yml` ou `backend/src/main/resources/application.yml`) - deve usar `postgres:5432`, não `localhost:5432`
 
 ### Erro 3: Maven não encontra dependências
 
@@ -581,15 +581,15 @@ curl http://localhost:8080/api/v1/info
 # Retorna: {"timestamp":"...","status":401,"error":"Unauthorized",...}
 ```
 
-**Causa:** A rota não está configurada como pública no `SecurityConfig.java`. Por padrão, o Spring Security bloqueia todas as rotas que não estão explicitamente permitidas.
+**Causa:** A rota não está configurada como pública no arquivo `backend/src/main/java/com/plataforma/cursos/config/SecurityConfig.java`. Por padrão, o Spring Security bloqueia todas as rotas que não estão explicitamente permitidas.
 
 **Como diagnosticar:**
 1. Verifique se o endpoint existe no controller
-2. Verifique se a rota está em `requestMatchers().permitAll()` no `SecurityConfig.java`
+2. Verifique se a rota está em `requestMatchers().permitAll()` no arquivo `backend/src/main/java/com/plataforma/cursos/config/SecurityConfig.java`
 3. Verifique os logs do Spring Boot - geralmente mostra tentativas de acesso bloqueadas
 
 **Solução:**
-Adicione a rota no `SecurityConfig.java`:
+Adicione a rota no arquivo `backend/src/main/java/com/plataforma/cursos/config/SecurityConfig.java`:
 ```java
 .authorizeHttpRequests(auth -> auth
     .requestMatchers("/actuator/**").permitAll()
@@ -599,7 +599,7 @@ Adicione a rota no `SecurityConfig.java`:
 );
 ```
 
-**Importante:** Após modificar `SecurityConfig.java`, você precisa reiniciar a aplicação para as mudanças terem efeito.
+**Importante:** Após modificar o arquivo `backend/src/main/java/com/plataforma/cursos/config/SecurityConfig.java`, você precisa reiniciar a aplicação para as mudanças terem efeito.
 
 ### Erro 6: "403 Forbidden" mesmo com rota permitida
 
@@ -611,8 +611,8 @@ HTTP/1.1 403 Forbidden
 **Causa:** Geralmente relacionado a CSRF (Cross-Site Request Forgery) ou configuração incorreta de CORS.
 
 **Solução:**
-- Verifique se `csrf.disable()` está configurado no `SecurityConfig` (comum em APIs REST)
-- Verifique configurações de CORS no `application.yml` ou em uma classe de configuração separada
+- Verifique se `csrf.disable()` está configurado no arquivo `backend/src/main/java/com/plataforma/cursos/config/SecurityConfig.java` (comum em APIs REST)
+- Verifique configurações de CORS no arquivo `backend/src/main/resources/application.yml` ou em uma classe de configuração separada
 
 ## 8. Exercícios para eu fazer (1 exercício)
 
@@ -628,7 +628,7 @@ curl http://localhost:8080/api/v1/info
 ```
 
 **O que foi feito:**
-1. Criada classe `InfoController` em `backend/src/main/java/com/plataforma/cursos/controller/InfoController.java`
+1. Criada classe `InfoController` no arquivo `backend/src/main/java/com/plataforma/cursos/controller/InfoController.java`
 2. Adicionado endpoint `GET /api/v1/info` que retorna:
    ```json
    {
@@ -648,7 +648,7 @@ curl http://localhost:8080/api/v1/info
 ### Extrair mensagens para constantes
 
 **O que fazer:**
-- No `PingController`, ao invés de retornar `Map.of("status", "ok", "message", "pong")` diretamente, crie constantes:
+- No arquivo `backend/src/main/java/com/plataforma/cursos/controller/PingController.java`, ao invés de retornar `Map.of("status", "ok", "message", "pong")` diretamente, crie constantes:
   ```java
   private static final String STATUS_OK = "ok";
   private static final String MESSAGE_PONG = "pong";
@@ -686,7 +686,7 @@ Use este checklist para garantir que tudo está funcionando:
 - [ ] Logs mostram "Started PlataformaCursosApplication"
 - [ ] Backend conecta no PostgreSQL (sem erros de conexão nos logs)
 - [ ] Endpoints públicos funcionam sem autenticação (sem erro 401)
-- [ ] `SecurityConfig.java` está configurado corretamente com rotas públicas
+- [ ] O arquivo `backend/src/main/java/com/plataforma/cursos/config/SecurityConfig.java` está configurado corretamente com rotas públicas
 
 ### ✅ Código
 
@@ -711,10 +711,10 @@ Após completar este bloco, você deve conseguir explicar:
 
 Se você travar em algum ponto, revise:
 
-- **Backend não inicia:** Verifique logs (`docker-compose logs backend`), veja se PostgreSQL está pronto, verifique `application.yml`
+- **Backend não inicia:** Verifique logs (`docker-compose logs backend`), veja se PostgreSQL está pronto, verifique o arquivo `backend/src/main/resources/application.yml`
 - **Não entende anotações:** Leia a seção "Conceitos explicados" novamente, pesquise `@SpringBootApplication` no Google
 - **Maven não funciona:** Verifique se Maven está instalado (`mvn --version`), verifique conexão com internet
-- **Erro 401 ao acessar endpoint:** Verifique se a rota está em `requestMatchers().permitAll()` no `SecurityConfig.java` e reinicie a aplicação
+- **Erro 401 ao acessar endpoint:** Verifique se a rota está em `requestMatchers().permitAll()` no arquivo `backend/src/main/java/com/plataforma/cursos/config/SecurityConfig.java` e reinicie a aplicação
 
 ## Próximo bloco sugerido
 

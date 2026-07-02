@@ -18,6 +18,9 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/v1/ping").permitAll()
                 .requestMatchers("/api/v1/info").permitAll()
+                .requestMatchers("/api/v1/courses/**").permitAll()
+                .requestMatchers("/api/v1/media/**").permitAll()
+                .requestMatchers("/api/v1/admin/**").permitAll() // TODO(bloco 4): restringir quando houver auth
                 .anyRequest().authenticated()
             );
         return http.build();

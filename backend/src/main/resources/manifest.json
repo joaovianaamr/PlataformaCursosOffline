@@ -1,0 +1,43 @@
+{
+  "courses": {
+    "UniversoNarrado": {
+      "title": "Universo Narrado",
+      "description": "Curso completo de Física: Fundamentos de Mecânica, Vetores e as Frentes A, B e C.",
+      "coverImage": "universo-narrado-logo.jpg",
+      "modules": {
+        "01 - Fundamentos 1 - Fundamentos de Mecânica": {
+          "title": "Fundamentos de Mecânica",
+          "description": "Introdução aos conceitos fundamentais da mecânica clássica: pensamento aristotélico, física de Galileu e Newton."
+        },
+        "02 - Fundamentos 2 - A Matemática dos Vetores": {
+          "title": "A Matemática dos Vetores",
+          "description": "Vetores, operações e aplicações fundamentais para o estudo da física."
+        },
+        "03 - Frente A": {
+          "title": "Frente A — Cinemática e Dinâmica",
+          "description": "Módulos de cinemática, dinâmica, gravitação e hidrostática.",
+          "modules": {
+            "A01 - Introdução à Cinemática": {
+              "title": "Introdução à Cinemática",
+              "description": "Conceitos básicos de posição, velocidade e aceleração."
+            }
+          }
+        },
+        "04 - Frente B": {
+          "title": "Frente B — Termologia, Óptica e Ondas",
+          "description": "Módulos de termodinâmica, óptica geométrica e acústica."
+        },
+        "05 - Frente C": {
+          "title": "Frente C — Eletromagnetismo e Física Moderna",
+          "description": "Módulos de eletricidade, magnetismo e física nuclear."
+        }
+      }
+    },
+    "Quimica": {
+      "title": "Química",
+      "description": "Curso completo de Química: Geral e Inorgânica, Físico-Química e Orgânica.",
+      "coverImage": "quimica-cover.png",
+      "modules": {}
+    }
+  }
+}

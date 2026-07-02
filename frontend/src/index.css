@@ -1,41 +1,54 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@import "tailwindcss";
+
+/* Tipografia: hospedada localmente (@fontsource) para funcionar 100% offline. */
+@import "@fontsource/fraunces/400.css";
+@import "@fontsource/fraunces/500.css";
+@import "@fontsource/fraunces/600.css";
+@import "@fontsource/fraunces/600-italic.css";
+@import "@fontsource/fraunces/700.css";
+@import "@fontsource/fraunces/900.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource-variable/jetbrains-mono";
+
+/*
+ * Tokens do tema "estante pessoal": paleta quente de tinta e papel,
+ * serifada para títulos (como o lombo de um livro) + mono para
+ * números de aula/índice, sobre um fundo escuro acolhedor.
+ * Uso: bg-bg / bg-surface / bg-surface-hover / border-border / text-text /
+ * text-text-muted / bg-accent / bg-success / font-display / font-mono
+ */
+@theme {
+  --color-bg: #15120e;
+  --color-surface: #1e1913;
+  --color-surface-hover: #292217;
+  --color-border: #3c3324;
+  --color-text: #f3ead9;
+  --color-text-muted: #a99c81;
+  --color-accent: #d3a039;
+  --color-accent-hover: #e6b752;
+  --color-success: #82a171;
+
+  --font-sans: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  @apply bg-bg text-text font-sans;
+  background-image:
+    radial-gradient(ellipse 900px 500px at 12% -10%, rgba(211, 160, 57, 0.08), transparent),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 3px);
 }
 
-.app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+::selection {
+  background-color: rgba(211, 160, 57, 0.35);
+  color: var(--color-text);
 }
 
-.app-header {
-  text-align: center;
-  padding: 2rem;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.app-header h1 {
-  color: #333;
-  margin-bottom: 0.5rem;
-  font-size: 2.5rem;
-}
-
-.app-header p {
-  color: #666;
-  font-size: 1.1rem;
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }

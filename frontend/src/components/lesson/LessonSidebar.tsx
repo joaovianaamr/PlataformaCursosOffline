@@ -14,7 +14,7 @@ export function LessonSidebar({ courseSlug, modulePath, lessons, activeLessonSlu
 
   return (
     <nav className="flex flex-col gap-1 rounded-md border border-border bg-surface p-2">
-      <p className="px-2 pb-1 pt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-text-muted">
+      <p className="px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-text-muted">
         Nesta aula
       </p>
       {lessons.map((lesson) => {

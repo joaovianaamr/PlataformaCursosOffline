@@ -48,7 +48,7 @@ export function VideoPlayer({ videoUrl, lessonSlug, initialPositionSeconds, onPr
       key={lessonSlug}
       controls
       autoPlay
-      className="w-full rounded-lg bg-black"
+      className="w-full rounded-md border border-border bg-black"
       src={buildVideoUrl(videoUrl)}
       onTimeUpdate={handleTimeUpdate}
       onEnded={onEnded}

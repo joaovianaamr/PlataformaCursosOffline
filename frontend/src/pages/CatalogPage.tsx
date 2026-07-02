@@ -37,7 +37,8 @@ export function CatalogPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="buscar curso..."
-            className="w-full rounded-md border border-border bg-surface py-2 pl-7 pr-3 text-sm text-text placeholder:text-text-muted/70 focus:border-accent focus:outline-none"
+            aria-label="Buscar curso"
+            className="w-full rounded-md border border-border bg-surface py-2 pl-7 pr-3 text-sm text-text placeholder:text-text-muted/70 focus:border-accent"
           />
         </div>
       </div>

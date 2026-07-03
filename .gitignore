@@ -57,3 +57,6 @@ out/
 Thumbs.db
 .DS_Store
 
+# Vídeos dos cursos (montados via docker-compose, não fazem parte do repo)
+/videos/
+

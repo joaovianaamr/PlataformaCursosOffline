@@ -52,3 +52,38 @@ body {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* Barra de progresso do player de corte: trilho fino com preenchimento âmbar
+   (a cor do preenchimento vem de um gradiente inline, ver ChapterVideoPlayer). */
+input[type='range'].corte-seek {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+input[type='range'].corte-seek::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+}
+input[type='range'].corte-seek::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+}
+input[type='range'].corte-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -3px;
+  border-radius: 9999px;
+  background: var(--color-accent-hover);
+  cursor: pointer;
+}
+input[type='range'].corte-seek::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--color-accent-hover);
+  cursor: pointer;
+}

@@ -1,8 +1,7 @@
-import { useEffect, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useModuleDetail } from '@/hooks/useModuleDetail'
 import { useProgress } from '@/hooks/useProgress'
-import { VideoPlayer, type VideoPlayerHandle } from '@/components/lesson/VideoPlayer'
+import { ChapterVideoPlayer } from '@/components/lesson/ChapterVideoPlayer'
 import { ChapterList } from '@/components/lesson/ChapterList'
 import { MaterialsList } from '@/components/lesson/MaterialsList'
 import { Spinner } from '@/components/common/Spinner'
@@ -21,24 +20,11 @@ export function ChapterPage() {
   const modulePath = [m1, m2].filter((v): v is string => Boolean(v))
   const navigate = useNavigate()
   const { data: module, isLoading, isError } = useModuleDetail(courseSlug, modulePath)
-  const { isWatched, updateProgress, markWatched } = useProgress()
-  const playerRef = useRef<VideoPlayerHandle>(null)
-  const isFirstRender = useRef(true)
+  const { isWatched, markWatched } = useProgress()
 
   const lesson = module?.lessons.find((l) => l.slug === lessonSlug)
   const chapterIndex = lesson ? lesson.chapters.findIndex((c) => String(c.order) === chapterOrder) : -1
   const chapter = lesson?.chapters[chapterIndex]
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
-    }
-    if (chapter) {
-      playerRef.current?.seekTo(chapter.startSeconds)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapterOrder])
 
   if (isLoading) return <Spinner />
   if (isError || !module) return <ErrorState message="Não foi possível carregar esta aula." />
@@ -55,10 +41,10 @@ export function ChapterPage() {
     navigate(`${cortesBasePath}/${target.order}`)
   }
 
-  const handleChapterWatched = (watchedChapterOrder: number) => {
-    markWatched(chapterProgressKey(lesson.slug, watchedChapterOrder))
+  const handleChapterWatched = () => {
+    markWatched(chapterProgressKey(lesson.slug, chapter.order))
     const allWatched = lesson.chapters.every(
-      (c) => c.order === watchedChapterOrder || isWatched(chapterProgressKey(lesson.slug, c.order)),
+      (c) => c.order === chapter.order || isWatched(chapterProgressKey(lesson.slug, c.order)),
     )
     if (allWatched) {
       markWatched(lesson.slug)
@@ -82,15 +68,11 @@ export function ChapterPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-4">
-          <VideoPlayer
-            ref={playerRef}
+          <ChapterVideoPlayer
             key={lesson.slug}
             lessonSlug={lesson.slug}
             videoUrl={lesson.videoUrl}
-            initialPositionSeconds={chapter.startSeconds}
-            chapters={lesson.chapters}
-            onProgress={(position, watched) => updateProgress(lesson.slug, position, watched)}
-            onEnded={() => markWatched(lesson.slug)}
+            chapter={chapter}
             onChapterWatched={handleChapterWatched}
           />
 

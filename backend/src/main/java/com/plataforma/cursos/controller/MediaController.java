@@ -4,6 +4,7 @@ import com.plataforma.cursos.service.VideoStreamingService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.ResourceRegion;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRange;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,9 +64,16 @@ public class MediaController {
         PathAndSlug parsed = splitItemPath(itemPath);
         Path path = videoStreamingService.resolveMaterial(courseSlug, parsed.modulePath(), parsed.itemSlug());
         UrlResource resource = new UrlResource(path.toUri());
+        // Content-Disposition "inline" pede pro navegador exibir o PDF em vez de
+        // baixar. O nome do arquivo precisa ir codificado como UTF-8 (RFC 5987),
+        // senão um caractere acentuado quebra o header e alguns navegadores caem
+        // pro fallback de forçar o download.
+        ContentDisposition disposition = ContentDisposition.inline()
+                .filename(path.getFileName().toString(), StandardCharsets.UTF_8)
+                .build();
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + path.getFileName() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
                 .body(resource);
     }
 

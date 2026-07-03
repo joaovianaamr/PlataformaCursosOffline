@@ -1,11 +1,18 @@
+import { useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useModuleDetail } from '@/hooks/useModuleDetail'
 import { useProgress } from '@/hooks/useProgress'
-import { VideoPlayer } from '@/components/lesson/VideoPlayer'
+import { VideoPlayer, type VideoPlayerHandle } from '@/components/lesson/VideoPlayer'
 import { LessonSidebar } from '@/components/lesson/LessonSidebar'
+import { ChapterList } from '@/components/lesson/ChapterList'
 import { MaterialsList } from '@/components/lesson/MaterialsList'
 import { Spinner } from '@/components/common/Spinner'
 import { ErrorState } from '@/components/common/ErrorState'
+import type { Chapter } from '@/types/course'
+
+function chapterProgressKey(lessonSlug: string, chapterSlug: string): string {
+  return `${lessonSlug}#${chapterSlug}`
+}
 
 export function LessonPage() {
   const { courseSlug, m1, m2, lessonSlug } = useParams<{
@@ -18,6 +25,8 @@ export function LessonPage() {
   const navigate = useNavigate()
   const { data: module, isLoading, isError } = useModuleDetail(courseSlug, modulePath)
   const { isWatched, getPosition, updateProgress, markWatched } = useProgress()
+  const playerRef = useRef<VideoPlayerHandle>(null)
+  const [activeChapterSlug, setActiveChapterSlug] = useState<string | null>(null)
 
   if (isLoading) return <Spinner />
   if (isError || !module) return <ErrorState message="Não foi possível carregar esta aula." />
@@ -34,6 +43,21 @@ export function LessonPage() {
 
   const goTo = (targetSlug: string) => {
     navigate(`${modulePathUrl}/aulas/${targetSlug}`)
+  }
+
+  const handleSelectChapter = (chapter: Chapter) => {
+    playerRef.current?.seekTo(chapter.startSeconds)
+    setActiveChapterSlug(chapter.slug)
+  }
+
+  const handleChapterWatched = (chapterSlug: string) => {
+    markWatched(chapterProgressKey(lesson.slug, chapterSlug))
+    const allWatched = lesson.chapters.every(
+      (c) => c.slug === chapterSlug || isWatched(chapterProgressKey(lesson.slug, c.slug)),
+    )
+    if (allWatched) {
+      markWatched(lesson.slug)
+    }
   }
 
   return (
@@ -53,12 +77,16 @@ export function LessonPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-4">
           <VideoPlayer
+            ref={playerRef}
             key={lesson.slug}
             lessonSlug={lesson.slug}
             videoUrl={lesson.videoUrl}
             initialPositionSeconds={getPosition(lesson.slug)}
+            chapters={lesson.chapters}
             onProgress={(position, watched) => updateProgress(lesson.slug, position, watched)}
             onEnded={() => markWatched(lesson.slug)}
+            onActiveChapterChange={setActiveChapterSlug}
+            onChapterWatched={handleChapterWatched}
           />
 
           <div className="flex items-center justify-between">
@@ -79,6 +107,13 @@ export function LessonPage() {
               próxima →
             </button>
           </div>
+
+          <ChapterList
+            chapters={lesson.chapters}
+            activeChapterSlug={activeChapterSlug}
+            isChapterWatched={(chapterSlug) => isWatched(chapterProgressKey(lesson.slug, chapterSlug))}
+            onSelect={handleSelectChapter}
+          />
 
           <MaterialsList materials={module.materials} />
         </div>

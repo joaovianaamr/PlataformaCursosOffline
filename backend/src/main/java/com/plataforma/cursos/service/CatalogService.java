@@ -147,6 +147,9 @@ public class CatalogService {
         }
         Path archivesDir = folder.moduleDir().resolve("archives");
         for (Material material : folder.materials()) {
+            if (material.isLink()) {
+                continue; // materiais do tipo LINK apontam para fora, não têm arquivo local
+            }
             materialIndex.put(mediaKey(courseSlug, currentPath, material.slug()), archivesDir.resolve(material.filename()));
         }
 

@@ -1,9 +1,11 @@
 package com.plataforma.cursos.controller;
 
+import com.plataforma.cursos.dto.ChapterDto;
 import com.plataforma.cursos.dto.LessonDto;
 import com.plataforma.cursos.dto.MaterialDto;
 import com.plataforma.cursos.dto.ModuleDetailDto;
 import com.plataforma.cursos.dto.ModuleSummaryDto;
+import com.plataforma.cursos.model.Chapter;
 import com.plataforma.cursos.model.CourseModule;
 import com.plataforma.cursos.model.Lesson;
 import com.plataforma.cursos.model.Material;
@@ -63,11 +65,19 @@ public class ModuleController {
 
     private LessonDto toLessonDto(String courseSlug, List<String> modulePath, Lesson lesson) {
         String videoUrl = "/api/v1/media/videos/%s/%s/%s".formatted(courseSlug, String.join("/", modulePath), lesson.slug());
-        return new LessonDto(lesson.slug(), lesson.order(), lesson.title(), videoUrl);
+        List<ChapterDto> chapters = lesson.chapters().stream().map(this::toChapterDto).toList();
+        return new LessonDto(lesson.slug(), lesson.order(), lesson.title(), videoUrl, chapters);
+    }
+
+    private ChapterDto toChapterDto(Chapter chapter) {
+        return new ChapterDto(chapter.slug(), chapter.order(), chapter.title(), chapter.startSeconds(), chapter.endSeconds());
     }
 
     private MaterialDto toMaterialDto(String courseSlug, List<String> modulePath, Material material) {
+        if (material.isLink()) {
+            return new MaterialDto(material.slug(), material.title(), material.type(), null, material.url());
+        }
         String fileUrl = "/api/v1/media/materials/%s/%s/%s".formatted(courseSlug, String.join("/", modulePath), material.slug());
-        return new MaterialDto(material.slug(), material.title(), material.type(), fileUrl);
+        return new MaterialDto(material.slug(), material.title(), material.type(), fileUrl, null);
     }
 }

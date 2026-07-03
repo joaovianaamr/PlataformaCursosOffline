@@ -6,6 +6,7 @@ public record MaterialDto(
         String slug,
         String title,
         MaterialType type,
-        String fileUrl
+        String fileUrl,
+        String url
 ) {
 }

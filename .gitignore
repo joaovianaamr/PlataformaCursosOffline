@@ -1,4 +1,9 @@
 
+# Python (scripts de processamento em backend/scripts/)
+.venv/
+__pycache__/
+*.pyc
+
 # Java
 *.class
 *.log

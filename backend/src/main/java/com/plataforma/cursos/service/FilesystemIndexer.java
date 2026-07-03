@@ -1,5 +1,7 @@
 package com.plataforma.cursos.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.plataforma.cursos.model.Chapter;
 import com.plataforma.cursos.model.Lesson;
 import com.plataforma.cursos.model.Material;
 import com.plataforma.cursos.model.MaterialType;
@@ -15,8 +17,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -30,6 +35,7 @@ public class FilesystemIndexer {
     private static final Pattern LEADING_NUMBER = Pattern.compile("^(\\d+)[._\\-\\s]+(.+)$");
 
     private final String videosPath;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public FilesystemIndexer(@Value("${videos.path}") String videosPath) {
         this.videosPath = videosPath;
@@ -81,18 +87,35 @@ public class FilesystemIndexer {
         boolean isLeaf = Files.isDirectory(moduleDir.resolve("videos")) || Files.isDirectory(moduleDir.resolve("archives"));
 
         if (isLeaf) {
-            List<Lesson> lessons = listFiles(moduleDir.resolve("videos"), ".mp4").stream()
+            List<Path> videoFiles = listFiles(moduleDir.resolve("videos"), ".mp4");
+            List<Lesson> lessons = videoFiles.stream()
                     .map(this::parseLesson)
                     .sorted(Comparator.comparingInt(Lesson::order))
                     .toList();
-            List<Material> materials = listFiles(moduleDir.resolve("archives"), ".pdf").stream()
+            List<Material> localMaterials = listFiles(moduleDir.resolve("archives"), ".pdf").stream()
                     .map(this::parseMaterial)
                     .toList();
+            List<Material> sidecarLinkMaterials = videoFiles.stream()
+                    .flatMap(videoFile -> readSidecarLinkMaterials(videoFile).stream())
+                    .toList();
+            List<Material> materials = mergeMaterials(localMaterials, sidecarLinkMaterials);
             return new ModuleFolder(folderName, slug, moduleDir, lessons, materials, List.of());
         }
 
         List<ModuleFolder> children = scanModules(moduleDir, false);
         return new ModuleFolder(folderName, slug, moduleDir, List.of(), List.of(), children);
+    }
+
+    /** Materiais locais (achados em archives/) têm prioridade; links do sidecar completam, sem duplicar slug. */
+    private List<Material> mergeMaterials(List<Material> localMaterials, List<Material> sidecarLinkMaterials) {
+        Map<String, Material> bySlug = new LinkedHashMap<>();
+        for (Material material : localMaterials) {
+            bySlug.put(material.slug(), material);
+        }
+        for (Material material : sidecarLinkMaterials) {
+            bySlug.putIfAbsent(material.slug(), material);
+        }
+        return List.copyOf(bySlug.values());
     }
 
     private List<Path> listFiles(Path dir, String extension) {
@@ -123,7 +146,8 @@ public class FilesystemIndexer {
             log.warn("Could not parse leading number from lesson filename: {}", filename);
         }
         String title = Normalizer.normalize(rawTitle.replace('_', ' ').trim(), Normalizer.Form.NFC);
-        return new Lesson(SlugUtils.slugify(title), order, title, filename);
+        List<Chapter> chapters = readSidecar(videoFile).map(LessonSidecar::chapters).orElseGet(List::of);
+        return new Lesson(SlugUtils.slugify(title), order, title, filename, chapters);
     }
 
     private Material parseMaterial(Path pdfFile) {
@@ -134,12 +158,33 @@ public class FilesystemIndexer {
         MaterialType type;
         if (normalized.contains("teoria")) {
             type = MaterialType.TEORIA;
-        } else if (normalized.contains("exercicio")) {
+        } else if (normalized.contains("exercicio") || normalized.contains("gabarito")) {
             type = MaterialType.EXERCICIOS;
         } else {
             type = MaterialType.OTHER;
         }
-        return new Material(SlugUtils.slugify(title), title, filename, type);
+        return new Material(SlugUtils.slugify(title), title, filename, type, null);
+    }
+
+    private List<Material> readSidecarLinkMaterials(Path videoFile) {
+        return readSidecar(videoFile).map(LessonSidecar::materials).orElseGet(List::of).stream()
+                .filter(m -> m.url() != null && !m.url().isBlank())
+                .map(m -> new Material(m.slug(), m.title(), null, m.type(), m.url()))
+                .toList();
+    }
+
+    /** Sidecar normalizado em "<mesmo-nome-do-vídeo>.meta.json", escrito pelo script de processamento. */
+    private java.util.Optional<LessonSidecar> readSidecar(Path videoFile) {
+        Path sidecarPath = videoFile.resolveSibling(stripExtension(videoFile.getFileName().toString()) + ".meta.json");
+        if (!Files.isRegularFile(sidecarPath)) {
+            return java.util.Optional.empty();
+        }
+        try {
+            return java.util.Optional.of(objectMapper.readValue(sidecarPath.toFile(), LessonSidecar.class));
+        } catch (IOException e) {
+            log.warn("Falha ao ler sidecar {}: {}", sidecarPath, e.getMessage());
+            return java.util.Optional.empty();
+        }
     }
 
     private static String stripExtension(String filename) {
@@ -152,5 +197,20 @@ public class FilesystemIndexer {
 
     public record ModuleFolder(String folderName, String slug, Path moduleDir, List<Lesson> lessons,
                                 List<Material> materials, List<ModuleFolder> children) {
+    }
+
+    /** Espelha o .meta.json escrito por backend/scripts/process_chapters.py. */
+    public record LessonSidecar(String sourceVideoId, List<Chapter> chapters, List<SidecarMaterial> materials) {
+        public LessonSidecar {
+            if (chapters == null) {
+                chapters = List.of();
+            }
+            if (materials == null) {
+                materials = List.of();
+            }
+        }
+    }
+
+    public record SidecarMaterial(MaterialType type, String title, String slug, String filename, String url) {
     }
 }

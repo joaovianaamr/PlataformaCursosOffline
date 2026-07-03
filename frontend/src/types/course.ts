@@ -24,20 +24,30 @@ export interface CourseDetail {
   modules: ModuleSummary[]
 }
 
-export type MaterialType = 'TEORIA' | 'EXERCICIOS' | 'OTHER'
+export type MaterialType = 'TEORIA' | 'EXERCICIOS' | 'LINK' | 'OTHER'
+
+export interface Chapter {
+  slug: string
+  order: number
+  title: string
+  startSeconds: number
+  endSeconds: number
+}
 
 export interface Lesson {
   slug: string
   order: number
   title: string
   videoUrl: string
+  chapters: Chapter[]
 }
 
 export interface Material {
   slug: string
   title: string
   type: MaterialType
-  fileUrl: string
+  fileUrl: string | null
+  url: string | null
 }
 
 export interface ModuleDetail {

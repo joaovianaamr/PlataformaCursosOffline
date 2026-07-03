@@ -1,20 +1,42 @@
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { buildVideoUrl } from '@/services/media'
+import type { Chapter } from '@/types/course'
 
 const SAVE_INTERVAL_SECONDS = 5
 const WATCHED_THRESHOLD = 0.9
+
+export interface VideoPlayerHandle {
+  seekTo: (seconds: number) => void
+}
 
 interface VideoPlayerProps {
   videoUrl: string
   lessonSlug: string
   initialPositionSeconds: number
+  chapters: Chapter[]
   onProgress: (positionSeconds: number, watched: boolean) => void
   onEnded: () => void
+  onActiveChapterChange?: (chapterSlug: string | null) => void
+  onChapterWatched?: (chapterSlug: string) => void
 }
 
-export function VideoPlayer({ videoUrl, lessonSlug, initialPositionSeconds, onProgress, onEnded }: VideoPlayerProps) {
+export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(function VideoPlayer(
+  { videoUrl, lessonSlug, initialPositionSeconds, chapters, onProgress, onEnded, onActiveChapterChange, onChapterWatched },
+  ref,
+) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const lastSavedRef = useRef(0)
+  const activeChapterRef = useRef<string | null>(null)
+  const watchedChaptersRef = useRef<Set<string>>(new Set())
+
+  useImperativeHandle(ref, () => ({
+    seekTo(seconds: number) {
+      const video = videoRef.current
+      if (!video) return
+      video.currentTime = seconds
+      video.play().catch(() => {})
+    },
+  }))
 
   useEffect(() => {
     const video = videoRef.current
@@ -31,10 +53,31 @@ export function VideoPlayer({ videoUrl, lessonSlug, initialPositionSeconds, onPr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonSlug])
 
+  useEffect(() => {
+    activeChapterRef.current = null
+    watchedChaptersRef.current = new Set()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lessonSlug])
+
   const handleTimeUpdate = () => {
     const video = videoRef.current
     if (!video) return
     const now = video.currentTime
+
+    if (chapters.length > 0) {
+      const current = chapters.find((c) => now >= c.startSeconds && now < c.endSeconds) ?? null
+      if (current?.slug !== activeChapterRef.current) {
+        activeChapterRef.current = current?.slug ?? null
+        onActiveChapterChange?.(current?.slug ?? null)
+      }
+      for (const chapter of chapters) {
+        if (now >= chapter.endSeconds && !watchedChaptersRef.current.has(chapter.slug)) {
+          watchedChaptersRef.current.add(chapter.slug)
+          onChapterWatched?.(chapter.slug)
+        }
+      }
+    }
+
     if (now - lastSavedRef.current >= SAVE_INTERVAL_SECONDS) {
       lastSavedRef.current = now
       const watched = video.duration > 0 && now / video.duration >= WATCHED_THRESHOLD
@@ -54,4 +97,4 @@ export function VideoPlayer({ videoUrl, lessonSlug, initialPositionSeconds, onPr
       onEnded={onEnded}
     />
   )
-}
+})

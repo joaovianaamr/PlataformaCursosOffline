@@ -15,27 +15,22 @@ interface CorteListSectionProps {
   materials: Material[]
 }
 
-interface LessonRow {
-  lesson: Lesson
-  corteNumber: number
-  chapterNumbers: Map<number, number>
-}
-
-/** Numeração corrida sobre os dados completos, independente do que está expandido. */
-function buildLessonRows(lessons: Lesson[]): LessonRow[] {
+/**
+ * Numeração corrida sobre os dados completos, independente do que está
+ * expandido — mas só conta cortes de verdade. Aulas sem capítulos usam a
+ * numeração da própria aula (lesson.order), não entram nessa contagem: são
+ * um "slot" de aula, não um corte extraído de um vídeo maior.
+ */
+function buildChapterNumbers(lessons: Lesson[]): Map<string, number> {
   let corteNumber = 0
-  return lessons.map((lesson) => {
-    if (lesson.chapters.length === 0) {
-      corteNumber += 1
-      return { lesson, corteNumber, chapterNumbers: new Map() }
-    }
-    const chapterNumbers = new Map<number, number>()
+  const numbers = new Map<string, number>()
+  for (const lesson of lessons) {
     for (const chapter of lesson.chapters) {
       corteNumber += 1
-      chapterNumbers.set(chapter.order, corteNumber)
+      numbers.set(`${lesson.slug}-${chapter.order}`, corteNumber)
     }
-    return { lesson, corteNumber: -1, chapterNumbers }
-  })
+  }
+  return numbers
 }
 
 /**
@@ -65,12 +60,12 @@ export function CorteListSection({ courseSlug, modulePath, lessons, materials }:
   }
 
   const aulasBasePath = `/cursos/${courseSlug}/modulos/${modulePath.join('/')}/aulas`
-  const rows = buildLessonRows(lessons)
+  const chapterNumbers = buildChapterNumbers(lessons)
 
   return (
     <div className="flex flex-col gap-6">
       <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-md border border-border bg-surface">
-        {rows.map(({ lesson, corteNumber, chapterNumbers }) => {
+        {lessons.map((lesson) => {
           if (lesson.chapters.length === 0) {
             const watched = isWatched(lesson.slug)
             return (
@@ -80,8 +75,8 @@ export function CorteListSection({ courseSlug, modulePath, lessons, materials }:
                   className="group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-surface-hover"
                 >
                   <span className="absolute inset-y-0 left-0 w-0.5 bg-accent opacity-0 transition-opacity group-hover:opacity-100" />
-                  <span className={`w-9 shrink-0 text-right font-mono text-sm ${watched ? 'text-success' : 'text-text-muted'}`}>
-                    {watched ? '✓' : String(corteNumber).padStart(3, '0')}
+                  <span className={`w-9 shrink-0 text-right font-mono text-sm ${watched ? 'text-success' : 'text-accent'}`}>
+                    {watched ? '✓' : String(lesson.order).padStart(2, '0')}
                   </span>
                   <span className="min-w-0 flex-1 text-text">{lesson.title}</span>
                 </Link>
@@ -122,7 +117,7 @@ export function CorteListSection({ courseSlug, modulePath, lessons, materials }:
                       >
                         <span className="absolute inset-y-0 left-0 w-0.5 bg-accent opacity-0 transition-opacity group-hover:opacity-100" />
                         <span className={`w-9 shrink-0 text-right font-mono text-sm ${watched ? 'text-success' : 'text-text-muted'}`}>
-                          {watched ? '✓' : String(chapterNumbers.get(chapter.order)).padStart(3, '0')}
+                          {watched ? '✓' : String(chapterNumbers.get(`${lesson.slug}-${chapter.order}`)).padStart(3, '0')}
                         </span>
                         <span className="min-w-0 flex-1 text-text">{chapter.title}</span>
                         <span className="shrink-0 font-mono text-xs text-text-muted">{formatTimestamp(chapter.startSeconds)}</span>

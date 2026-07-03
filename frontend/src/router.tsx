@@ -6,8 +6,10 @@ import { ModulePage } from '@/pages/ModulePage'
 import { LessonPage } from '@/pages/LessonPage'
 import { ChapterPage } from '@/pages/ChapterPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { MaterialWhiteboardPage } from '@/pages/MaterialWhiteboardPage'
 
 export const router = createBrowserRouter([
+  { path: 'quadro', element: <MaterialWhiteboardPage /> },
   {
     path: '/',
     element: <AppShell />,

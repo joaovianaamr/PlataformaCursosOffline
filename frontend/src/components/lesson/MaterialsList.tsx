@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Material } from '@/types/course'
 import { buildMaterialUrl } from '@/services/media'
 
@@ -16,7 +17,7 @@ export function MaterialsList({ materials }: MaterialsListProps) {
           const isExternal = material.type === 'LINK'
           const href = isExternal ? material.url! : buildMaterialUrl(material.fileUrl!)
           return (
-            <li key={material.slug}>
+            <li key={material.slug} className="flex items-center gap-1.5">
               <a
                 href={href}
                 target="_blank"
@@ -28,6 +29,16 @@ export function MaterialsList({ materials }: MaterialsListProps) {
                 </span>
                 {material.title}
               </a>
+              {!isExternal && material.fileUrl && (
+                <Link
+                  to={`/quadro?fileUrl=${encodeURIComponent(material.fileUrl)}&title=${encodeURIComponent(material.title)}`}
+                  className="inline-flex items-center gap-1.5 rounded-sm border border-border bg-bg px-3 py-1.5 text-sm text-text transition-colors hover:border-accent/50 hover:text-accent"
+                  title="Abrir no quadro para desenhar por cima"
+                >
+                  <span aria-hidden className="text-text-muted">✎</span>
+                  Quadro
+                </Link>
+              )}
             </li>
           )
         })}

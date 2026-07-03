@@ -113,7 +113,11 @@ def local_videos(module_dir: Path) -> list[tuple[int, Path]]:
 
 
 def sidecar_path(video_file: Path) -> Path:
-    return video_file.with_suffix("").with_suffix(".meta.json")
+    # video_file.stem já lida certo com o "." real da extensão (é o único ponto
+    # que importa em Path.stem); NÃO encadear outro with_suffix() em cima dele
+    # -- isso re-interpretaria qualquer "." no MEIO do título (ex.: "ÓXIDOS.
+    # Óxido...", "P.V = n.R.T") como se fosse uma extensão, truncando o nome.
+    return video_file.with_name(video_file.stem + ".meta.json")
 
 
 def is_already_processed(video_file: Path) -> bool:

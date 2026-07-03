@@ -43,6 +43,48 @@ export function LessonPage() {
     navigate(`${modulePathUrl}/aulas/${targetSlug}`)
   }
 
+  // Num módulo que já usa cortes (ex.: Química), uma aula solta sem capítulos
+  // é a exceção — não faz sentido colar a lista gigante de todas as outras
+  // aulas do módulo do lado. Em um módulo sem cortes (ex.: Física), onde cada
+  // aula é mesmo um arquivo separado dentro da pasta, essa lista É a
+  // navegação principal e continua fazendo sentido mostrar.
+  const moduleUsesCortes = module.lessons.some((l) => l.chapters.length > 0)
+
+  const player = (
+    <div className="flex flex-col gap-4">
+      <VideoPlayer
+        key={lesson.slug}
+        lessonSlug={lesson.slug}
+        videoUrl={lesson.videoUrl}
+        initialPositionSeconds={getPosition(lesson.slug)}
+        chapters={lesson.chapters}
+        onProgress={(position, watched) => updateProgress(lesson.slug, position, watched)}
+        onEnded={() => markWatched(lesson.slug)}
+      />
+
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          disabled={!prevLesson}
+          onClick={() => prevLesson && goTo(prevLesson.slug)}
+          className="rounded-sm border border-border px-4 py-2 font-mono text-xs uppercase tracking-wide text-text disabled:opacity-30 enabled:hover:border-accent/50 enabled:hover:bg-surface-hover"
+        >
+          ← anterior
+        </button>
+        <button
+          type="button"
+          disabled={!nextLesson}
+          onClick={() => nextLesson && goTo(nextLesson.slug)}
+          className="rounded-sm border border-border px-4 py-2 font-mono text-xs uppercase tracking-wide text-text disabled:opacity-30 enabled:hover:border-accent/50 enabled:hover:bg-surface-hover"
+        >
+          próxima →
+        </button>
+      </div>
+
+      <MaterialsList materials={lesson.materials} />
+    </div>
+  )
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -57,48 +99,20 @@ export function LessonPage() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
-        <div className="flex flex-col gap-4">
-          <VideoPlayer
-            key={lesson.slug}
-            lessonSlug={lesson.slug}
-            videoUrl={lesson.videoUrl}
-            initialPositionSeconds={getPosition(lesson.slug)}
-            chapters={lesson.chapters}
-            onProgress={(position, watched) => updateProgress(lesson.slug, position, watched)}
-            onEnded={() => markWatched(lesson.slug)}
+      {moduleUsesCortes ? (
+        <div className="mx-auto w-full max-w-3xl">{player}</div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+          {player}
+          <LessonSidebar
+            courseSlug={courseSlug!}
+            modulePath={modulePath}
+            lessons={module.lessons}
+            activeLessonSlug={lesson.slug}
+            isWatched={isWatched}
           />
-
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              disabled={!prevLesson}
-              onClick={() => prevLesson && goTo(prevLesson.slug)}
-              className="rounded-sm border border-border px-4 py-2 font-mono text-xs uppercase tracking-wide text-text disabled:opacity-30 enabled:hover:border-accent/50 enabled:hover:bg-surface-hover"
-            >
-              ← anterior
-            </button>
-            <button
-              type="button"
-              disabled={!nextLesson}
-              onClick={() => nextLesson && goTo(nextLesson.slug)}
-              className="rounded-sm border border-border px-4 py-2 font-mono text-xs uppercase tracking-wide text-text disabled:opacity-30 enabled:hover:border-accent/50 enabled:hover:bg-surface-hover"
-            >
-              próxima →
-            </button>
-          </div>
-
-          <MaterialsList materials={lesson.materials} />
         </div>
-
-        <LessonSidebar
-          courseSlug={courseSlug!}
-          modulePath={modulePath}
-          lessons={module.lessons}
-          activeLessonSlug={lesson.slug}
-          isWatched={isWatched}
-        />
-      </div>
+      )}
     </div>
   )
 }

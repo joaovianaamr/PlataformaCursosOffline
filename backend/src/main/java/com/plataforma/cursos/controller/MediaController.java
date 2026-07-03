@@ -1,5 +1,6 @@
 package com.plataforma.cursos.controller;
 
+import com.plataforma.cursos.service.ExternalPdfProxyService;
 import com.plataforma.cursos.service.VideoStreamingService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -31,9 +33,11 @@ public class MediaController {
     private static final long CHUNK_SIZE = 1024 * 1024L;
 
     private final VideoStreamingService videoStreamingService;
+    private final ExternalPdfProxyService externalPdfProxyService;
 
-    public MediaController(VideoStreamingService videoStreamingService) {
+    public MediaController(VideoStreamingService videoStreamingService, ExternalPdfProxyService externalPdfProxyService) {
         this.videoStreamingService = videoStreamingService;
+        this.externalPdfProxyService = externalPdfProxyService;
     }
 
     @GetMapping("/videos/{courseSlug}/{*itemPath}")
@@ -75,6 +79,20 @@ public class MediaController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
                 .body(resource);
+    }
+
+    @GetMapping("/external-pdf")
+    public ResponseEntity<byte[]> getExternalPdf(@RequestParam String driveId) throws IOException, InterruptedException {
+        byte[] bytes;
+        try {
+            bytes = externalPdfProxyService.fetchDrivePdf(driveId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline().build().toString())
+                .body(bytes);
     }
 
     private PathAndSlug splitItemPath(String itemPath) {

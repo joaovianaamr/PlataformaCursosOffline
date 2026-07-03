@@ -6,6 +6,18 @@ interface MaterialsListProps {
   materials: Material[]
 }
 
+// Links do Drive (Exercícios/Gabarito hospedados lá em vez de localmente) também
+// dão pra abrir no quadro — só não dá pra saber isso a partir do `type`, que é
+// sempre 'LINK' tanto pra esses quanto pra referências de verdade (artigos, vídeos).
+// O pdf.js não consegue buscar o PDF direto do Drive (CORS quebra no redirect),
+// então passa pelo proxy do backend, que baixa o arquivo por trás.
+const DRIVE_ID_PATTERN = /drive\.google\.com\/(?:uc\?(?:.*&)?id=|file\/d\/)([\w-]+)/i
+
+function toAnnotatablePdfUrl(url: string): string | null {
+  const driveId = url.match(DRIVE_ID_PATTERN)?.[1]
+  return driveId ? `/api/v1/media/external-pdf?driveId=${driveId}` : null
+}
+
 export function MaterialsList({ materials }: MaterialsListProps) {
   if (materials.length === 0) return null
 
@@ -16,6 +28,9 @@ export function MaterialsList({ materials }: MaterialsListProps) {
         {materials.map((material) => {
           const isExternal = material.type === 'LINK'
           const href = isExternal ? material.url! : buildMaterialUrl(material.fileUrl!)
+          const quadroFileUrl = isExternal
+            ? material.url && toAnnotatablePdfUrl(material.url)
+            : material.fileUrl
           return (
             <li key={material.slug} className="flex items-center gap-1.5">
               <a
@@ -29,9 +44,9 @@ export function MaterialsList({ materials }: MaterialsListProps) {
                 </span>
                 <span className="truncate">{material.title}</span>
               </a>
-              {!isExternal && material.fileUrl && (
+              {quadroFileUrl && (
                 <Link
-                  to={`/quadro?fileUrl=${encodeURIComponent(material.fileUrl)}&title=${encodeURIComponent(material.title)}`}
+                  to={`/quadro?fileUrl=${encodeURIComponent(quadroFileUrl)}&title=${encodeURIComponent(material.title)}`}
                   className="inline-flex shrink-0 items-center gap-1.5 rounded-sm border border-border bg-bg px-3 py-1.5 text-sm text-text transition-colors hover:border-accent/50 hover:text-accent"
                   title="Abrir no quadro para desenhar por cima"
                 >

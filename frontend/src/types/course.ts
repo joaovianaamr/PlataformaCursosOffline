@@ -34,20 +34,21 @@ export interface Chapter {
   endSeconds: number
 }
 
-export interface Lesson {
-  slug: string
-  order: number
-  title: string
-  videoUrl: string
-  chapters: Chapter[]
-}
-
 export interface Material {
   slug: string
   title: string
   type: MaterialType
   fileUrl: string | null
   url: string | null
+}
+
+export interface Lesson {
+  slug: string
+  order: number
+  title: string
+  videoUrl: string
+  chapters: Chapter[]
+  materials: Material[]
 }
 
 export interface ModuleDetail {

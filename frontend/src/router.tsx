@@ -4,6 +4,7 @@ import { CatalogPage } from '@/pages/CatalogPage'
 import { CourseDetailPage } from '@/pages/CourseDetailPage'
 import { ModulePage } from '@/pages/ModulePage'
 import { LessonPage } from '@/pages/LessonPage'
+import { ChapterPage } from '@/pages/ChapterPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 export const router = createBrowserRouter([
@@ -17,6 +18,8 @@ export const router = createBrowserRouter([
       { path: 'cursos/:courseSlug/modulos/:m1/:m2', element: <ModulePage /> },
       { path: 'cursos/:courseSlug/modulos/:m1/aulas/:lessonSlug', element: <LessonPage /> },
       { path: 'cursos/:courseSlug/modulos/:m1/:m2/aulas/:lessonSlug', element: <LessonPage /> },
+      { path: 'cursos/:courseSlug/modulos/:m1/aulas/:lessonSlug/cortes/:chapterSlug', element: <ChapterPage /> },
+      { path: 'cursos/:courseSlug/modulos/:m1/:m2/aulas/:lessonSlug/cortes/:chapterSlug', element: <ChapterPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

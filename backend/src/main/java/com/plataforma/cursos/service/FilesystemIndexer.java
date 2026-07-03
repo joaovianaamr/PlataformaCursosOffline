@@ -88,18 +88,34 @@ public class FilesystemIndexer {
 
         if (isLeaf) {
             List<Path> videoFiles = listFiles(moduleDir.resolve("videos"), ".mp4");
+            List<Path> pdfFiles = listFiles(moduleDir.resolve("archives"), ".pdf");
+
+            // PDFs nomeados "NN - Rótulo.pdf" pertencem à aula NN (mesma convenção dos vídeos);
+            // os que não têm número reconhecível ficam como material do módulo (ex: bibliografia geral).
+            Map<Integer, List<Material>> localMaterialsByOrder = new LinkedHashMap<>();
+            List<Material> orphanMaterials = new ArrayList<>();
+            for (Path pdfFile : pdfFiles) {
+                Material material = parseMaterial(pdfFile);
+                Integer order = extractOrder(pdfFile.getFileName().toString());
+                if (order != null) {
+                    localMaterialsByOrder.computeIfAbsent(order, k -> new ArrayList<>()).add(material);
+                } else {
+                    orphanMaterials.add(material);
+                }
+            }
+
             List<Lesson> lessons = videoFiles.stream()
-                    .map(this::parseLesson)
+                    .map(videoFile -> {
+                        Lesson base = parseLesson(videoFile);
+                        List<Material> lessonLocalMaterials = localMaterialsByOrder.getOrDefault(base.order(), List.of());
+                        List<Material> lessonLinkMaterials = readSidecarLinkMaterials(videoFile);
+                        List<Material> lessonMaterials = mergeMaterials(lessonLocalMaterials, lessonLinkMaterials);
+                        return new Lesson(base.slug(), base.order(), base.title(), base.filename(), base.chapters(), lessonMaterials);
+                    })
                     .sorted(Comparator.comparingInt(Lesson::order))
                     .toList();
-            List<Material> localMaterials = listFiles(moduleDir.resolve("archives"), ".pdf").stream()
-                    .map(this::parseMaterial)
-                    .toList();
-            List<Material> sidecarLinkMaterials = videoFiles.stream()
-                    .flatMap(videoFile -> readSidecarLinkMaterials(videoFile).stream())
-                    .toList();
-            List<Material> materials = mergeMaterials(localMaterials, sidecarLinkMaterials);
-            return new ModuleFolder(folderName, slug, moduleDir, lessons, materials, List.of());
+
+            return new ModuleFolder(folderName, slug, moduleDir, lessons, orphanMaterials, List.of());
         }
 
         List<ModuleFolder> children = scanModules(moduleDir, false);
@@ -116,6 +132,12 @@ public class FilesystemIndexer {
             bySlug.putIfAbsent(material.slug(), material);
         }
         return List.copyOf(bySlug.values());
+    }
+
+    /** Extrai o número de ordem líder de um nome de arquivo ("NN - Título.ext"), ou null se não houver. */
+    private Integer extractOrder(String filename) {
+        Matcher matcher = LEADING_NUMBER.matcher(stripExtension(filename));
+        return matcher.matches() ? Integer.parseInt(matcher.group(1)) : null;
     }
 
     private List<Path> listFiles(Path dir, String extension) {
@@ -147,7 +169,7 @@ public class FilesystemIndexer {
         }
         String title = Normalizer.normalize(rawTitle.replace('_', ' ').trim(), Normalizer.Form.NFC);
         List<Chapter> chapters = readSidecar(videoFile).map(LessonSidecar::chapters).orElseGet(List::of);
-        return new Lesson(SlugUtils.slugify(title), order, title, filename, chapters);
+        return new Lesson(SlugUtils.slugify(title), order, title, filename, chapters, List.of());
     }
 
     private Material parseMaterial(Path pdfFile) {

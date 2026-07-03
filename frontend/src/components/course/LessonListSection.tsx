@@ -37,7 +37,12 @@ export function LessonListSection({ courseSlug, modulePath, lessons, materials }
                 >
                   {watched ? '✓' : String(lesson.order).padStart(2, '0')}
                 </span>
-                <span className="text-text">{lesson.title}</span>
+                <span className="min-w-0 flex-1 text-text">{lesson.title}</span>
+                {lesson.chapters.length > 0 && (
+                  <span className="shrink-0 font-mono text-xs text-text-muted">
+                    {lesson.chapters.length} {lesson.chapters.length === 1 ? 'corte' : 'cortes'}
+                  </span>
+                )}
               </Link>
             </li>
           )

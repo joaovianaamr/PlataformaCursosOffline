@@ -7,6 +7,7 @@ public record LessonDto(
         int order,
         String title,
         String videoUrl,
-        List<ChapterDto> chapters
+        List<ChapterDto> chapters,
+        List<MaterialDto> materials
 ) {
 }

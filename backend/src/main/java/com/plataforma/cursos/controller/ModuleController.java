@@ -66,7 +66,10 @@ public class ModuleController {
     private LessonDto toLessonDto(String courseSlug, List<String> modulePath, Lesson lesson) {
         String videoUrl = "/api/v1/media/videos/%s/%s/%s".formatted(courseSlug, String.join("/", modulePath), lesson.slug());
         List<ChapterDto> chapters = lesson.chapters().stream().map(this::toChapterDto).toList();
-        return new LessonDto(lesson.slug(), lesson.order(), lesson.title(), videoUrl, chapters);
+        List<MaterialDto> materials = lesson.materials().stream()
+                .map(material -> toMaterialDto(courseSlug, modulePath, material))
+                .toList();
+        return new LessonDto(lesson.slug(), lesson.order(), lesson.title(), videoUrl, chapters, materials);
     }
 
     private ChapterDto toChapterDto(Chapter chapter) {

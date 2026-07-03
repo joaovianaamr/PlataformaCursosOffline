@@ -142,13 +142,19 @@ public class CatalogService {
         }
 
         Path videosDir = folder.moduleDir().resolve("videos");
+        Path archivesDir = folder.moduleDir().resolve("archives");
         for (Lesson lesson : folder.lessons()) {
             videoIndex.put(mediaKey(courseSlug, currentPath, lesson.slug()), videosDir.resolve(lesson.filename()));
+            for (Material material : lesson.materials()) {
+                if (material.isLink()) {
+                    continue; // materiais do tipo LINK apontam para fora, não têm arquivo local
+                }
+                materialIndex.put(mediaKey(courseSlug, currentPath, material.slug()), archivesDir.resolve(material.filename()));
+            }
         }
-        Path archivesDir = folder.moduleDir().resolve("archives");
         for (Material material : folder.materials()) {
             if (material.isLink()) {
-                continue; // materiais do tipo LINK apontam para fora, não têm arquivo local
+                continue;
             }
             materialIndex.put(mediaKey(courseSlug, currentPath, material.slug()), archivesDir.resolve(material.filename()));
         }

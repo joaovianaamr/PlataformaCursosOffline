@@ -1,4 +1,5 @@
 import type { Chapter } from '@/types/course'
+import { formatTimestamp } from '@/lib/formatTimestamp'
 
 interface ChapterListProps {
   chapters: Chapter[]
@@ -7,23 +8,13 @@ interface ChapterListProps {
   onSelect: (chapter: Chapter) => void
 }
 
-function formatTimestamp(totalSeconds: number): string {
-  const seconds = Math.max(0, Math.floor(totalSeconds))
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
-  const mm = h > 0 ? String(m).padStart(2, '0') : String(m)
-  const ss = String(s).padStart(2, '0')
-  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
-}
-
 export function ChapterList({ chapters, activeChapterSlug, isChapterWatched, onSelect }: ChapterListProps) {
   if (chapters.length === 0) return null
 
   return (
     <div className="flex flex-col gap-1 rounded-md border border-border bg-surface p-2">
       <p className="px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-text-muted">
-        Tópicos desta aula
+        Cortes desta aula
       </p>
       {chapters.map((chapter) => {
         const active = chapter.slug === activeChapterSlug

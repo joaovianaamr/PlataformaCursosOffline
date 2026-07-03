@@ -72,13 +72,16 @@ export function CorteListSection({ courseSlug, modulePath, lessons, materials }:
               <li key={lesson.slug} className="relative">
                 <Link
                   to={`${aulasBasePath}/${lesson.slug}`}
-                  className="group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-surface-hover"
+                  title={lesson.title}
+                  className="group flex items-center gap-4 bg-bg/40 px-4 py-3 transition-colors hover:bg-surface-hover"
                 >
                   <span className="absolute inset-y-0 left-0 w-0.5 bg-accent opacity-0 transition-opacity group-hover:opacity-100" />
                   <span className={`w-9 shrink-0 text-right font-mono text-sm ${watched ? 'text-success' : 'text-accent'}`}>
                     {watched ? '✓' : String(lesson.order).padStart(2, '0')}
                   </span>
-                  <span className="min-w-0 flex-1 text-text">{lesson.title}</span>
+                  <span className="min-w-0 flex-1 truncate font-mono text-xs uppercase tracking-[0.15em] text-text-muted group-hover:text-text">
+                    {extractShortTitle(lesson.title)}
+                  </span>
                 </Link>
               </li>
             )
@@ -92,6 +95,7 @@ export function CorteListSection({ courseSlug, modulePath, lessons, materials }:
                 <button
                   type="button"
                   onClick={() => toggleLesson(lesson.slug)}
+                  title={lesson.title}
                   className="group flex w-full items-center gap-4 bg-bg/40 px-4 py-3 text-left transition-colors hover:bg-surface-hover"
                 >
                   <span className="w-9 shrink-0 text-right font-mono text-sm text-accent">

@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useModuleDetail } from '@/hooks/useModuleDetail'
 import { ModuleList } from '@/components/course/ModuleList'
-import { LessonListSection } from '@/components/course/LessonListSection'
+import { CorteListSection } from '@/components/course/CorteListSection'
 import { Spinner } from '@/components/common/Spinner'
 import { ErrorState } from '@/components/common/ErrorState'
 
@@ -28,7 +28,7 @@ export function ModulePage() {
       {module.children.length > 0 ? (
         <ModuleList basePath={basePath} modules={module.children} />
       ) : (
-        <LessonListSection
+        <CorteListSection
           courseSlug={courseSlug!}
           modulePath={modulePath}
           lessons={module.lessons}

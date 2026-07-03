@@ -11,12 +11,12 @@ import { chapterProgressKey } from '@/lib/progress'
 import type { Chapter } from '@/types/course'
 
 export function ChapterPage() {
-  const { courseSlug, m1, m2, lessonSlug, chapterSlug } = useParams<{
+  const { courseSlug, m1, m2, lessonSlug, chapterOrder } = useParams<{
     courseSlug: string
     m1: string
     m2?: string
     lessonSlug: string
-    chapterSlug: string
+    chapterOrder: string
   }>()
   const modulePath = [m1, m2].filter((v): v is string => Boolean(v))
   const navigate = useNavigate()
@@ -26,7 +26,7 @@ export function ChapterPage() {
   const isFirstRender = useRef(true)
 
   const lesson = module?.lessons.find((l) => l.slug === lessonSlug)
-  const chapterIndex = lesson ? lesson.chapters.findIndex((c) => c.slug === chapterSlug) : -1
+  const chapterIndex = lesson ? lesson.chapters.findIndex((c) => String(c.order) === chapterOrder) : -1
   const chapter = lesson?.chapters[chapterIndex]
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export function ChapterPage() {
       playerRef.current?.seekTo(chapter.startSeconds)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapterSlug])
+  }, [chapterOrder])
 
   if (isLoading) return <Spinner />
   if (isError || !module) return <ErrorState message="Não foi possível carregar esta aula." />
@@ -46,20 +46,19 @@ export function ChapterPage() {
   if (!chapter) return <ErrorState message="Corte não encontrado nesta aula." />
 
   const modulePathUrl = `/cursos/${courseSlug}/modulos/${modulePath.join('/')}`
-  const lessonPathUrl = `${modulePathUrl}/aulas/${lesson.slug}`
-  const cortesBasePath = `${lessonPathUrl}/cortes`
+  const cortesBasePath = `${modulePathUrl}/aulas/${lesson.slug}/cortes`
 
   const prevChapter = chapterIndex > 0 ? lesson.chapters[chapterIndex - 1] : null
   const nextChapter = chapterIndex < lesson.chapters.length - 1 ? lesson.chapters[chapterIndex + 1] : null
 
   const goToChapter = (target: Chapter) => {
-    navigate(`${cortesBasePath}/${target.slug}`)
+    navigate(`${cortesBasePath}/${target.order}`)
   }
 
-  const handleChapterWatched = (watchedChapterSlug: string) => {
-    markWatched(chapterProgressKey(lesson.slug, watchedChapterSlug))
+  const handleChapterWatched = (watchedChapterOrder: number) => {
+    markWatched(chapterProgressKey(lesson.slug, watchedChapterOrder))
     const allWatched = lesson.chapters.every(
-      (c) => c.slug === watchedChapterSlug || isWatched(chapterProgressKey(lesson.slug, c.slug)),
+      (c) => c.order === watchedChapterOrder || isWatched(chapterProgressKey(lesson.slug, c.order)),
     )
     if (allWatched) {
       markWatched(lesson.slug)
@@ -70,10 +69,10 @@ export function ChapterPage() {
     <div className="flex flex-col gap-6">
       <div>
         <Link
-          to={lessonPathUrl}
+          to={modulePathUrl}
           className="font-mono text-xs uppercase tracking-wide text-accent hover:text-accent-hover"
         >
-          ← voltar à aula
+          ← voltar ao módulo
         </Link>
         <p className="mt-1 truncate text-sm text-text-muted">{lesson.title}</p>
         <h1 className="font-display text-2xl font-semibold tracking-tight text-text sm:text-3xl">
@@ -119,8 +118,8 @@ export function ChapterPage() {
 
         <ChapterList
           chapters={lesson.chapters}
-          activeChapterSlug={chapter.slug}
-          isChapterWatched={(cs) => isWatched(chapterProgressKey(lesson.slug, cs))}
+          activeChapterOrder={chapter.order}
+          isChapterWatched={(order) => isWatched(chapterProgressKey(lesson.slug, order))}
           onSelect={goToChapter}
         />
       </div>

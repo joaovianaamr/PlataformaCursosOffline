@@ -1,13 +1,11 @@
-import { useNavigate, useParams, Link } from 'react-router-dom'
+import { Navigate, useNavigate, useParams, Link } from 'react-router-dom'
 import { useModuleDetail } from '@/hooks/useModuleDetail'
 import { useProgress } from '@/hooks/useProgress'
 import { VideoPlayer } from '@/components/lesson/VideoPlayer'
 import { LessonSidebar } from '@/components/lesson/LessonSidebar'
-import { ChapterFolderList } from '@/components/lesson/ChapterFolderList'
 import { MaterialsList } from '@/components/lesson/MaterialsList'
 import { Spinner } from '@/components/common/Spinner'
 import { ErrorState } from '@/components/common/ErrorState'
-import { chapterProgressKey } from '@/lib/progress'
 
 export function LessonPage() {
   const { courseSlug, m1, m2, lessonSlug } = useParams<{
@@ -32,40 +30,10 @@ export function LessonPage() {
   const modulePathUrl = `/cursos/${courseSlug}/modulos/${modulePath.join('/')}`
   const lessonPathUrl = `${modulePathUrl}/aulas/${lesson.slug}`
 
-  // Aula com capítulos vira uma "pasta": mostra a lista de cortes em vez do player direto.
+  // O módulo já lista os cortes direto; um link solto para a aula-pasta
+  // pula direto para o primeiro corte em vez de mostrar um passo intermediário.
   if (lesson.chapters.length > 0) {
-    return (
-      <div className="flex flex-col gap-6">
-        <div>
-          <Link
-            to={modulePathUrl}
-            className="font-mono text-xs uppercase tracking-wide text-accent hover:text-accent-hover"
-          >
-            ← voltar ao módulo
-          </Link>
-          <p className="mt-1 font-mono text-xs uppercase tracking-[0.25em] text-accent">Aula</p>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-text sm:text-3xl">
-            {lesson.title}
-          </h1>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
-          <ChapterFolderList
-            basePath={`${lessonPathUrl}/cortes`}
-            chapters={lesson.chapters}
-            isChapterWatched={(chapterSlug) => isWatched(chapterProgressKey(lesson.slug, chapterSlug))}
-          />
-
-          <LessonSidebar
-            courseSlug={courseSlug!}
-            modulePath={modulePath}
-            lessons={module.lessons}
-            activeLessonSlug={lesson.slug}
-            isWatched={isWatched}
-          />
-        </div>
-      </div>
-    )
+    return <Navigate to={`${lessonPathUrl}/cortes/${lesson.chapters[0].order}`} replace />
   }
 
   const prevLesson = lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null

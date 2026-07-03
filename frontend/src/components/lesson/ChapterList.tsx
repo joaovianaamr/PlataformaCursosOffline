@@ -3,12 +3,12 @@ import { formatTimestamp } from '@/lib/formatTimestamp'
 
 interface ChapterListProps {
   chapters: Chapter[]
-  activeChapterSlug: string | null
-  isChapterWatched: (chapterSlug: string) => boolean
+  activeChapterOrder: number | null
+  isChapterWatched: (chapterOrder: number) => boolean
   onSelect: (chapter: Chapter) => void
 }
 
-export function ChapterList({ chapters, activeChapterSlug, isChapterWatched, onSelect }: ChapterListProps) {
+export function ChapterList({ chapters, activeChapterOrder, isChapterWatched, onSelect }: ChapterListProps) {
   if (chapters.length === 0) return null
 
   return (
@@ -17,11 +17,11 @@ export function ChapterList({ chapters, activeChapterSlug, isChapterWatched, onS
         Cortes desta aula
       </p>
       {chapters.map((chapter) => {
-        const active = chapter.slug === activeChapterSlug
-        const watched = isChapterWatched(chapter.slug)
+        const active = chapter.order === activeChapterOrder
+        const watched = isChapterWatched(chapter.order)
         return (
           <button
-            key={chapter.slug}
+            key={chapter.order}
             type="button"
             onClick={() => onSelect(chapter)}
             className={`relative flex items-center gap-3 rounded-sm px-3 py-2 pl-4 text-left text-sm transition-colors ${

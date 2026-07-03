@@ -16,8 +16,8 @@ interface VideoPlayerProps {
   chapters: Chapter[]
   onProgress: (positionSeconds: number, watched: boolean) => void
   onEnded: () => void
-  onActiveChapterChange?: (chapterSlug: string | null) => void
-  onChapterWatched?: (chapterSlug: string) => void
+  onActiveChapterChange?: (chapterOrder: number | null) => void
+  onChapterWatched?: (chapterOrder: number) => void
 }
 
 export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(function VideoPlayer(
@@ -26,8 +26,8 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
 ) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const lastSavedRef = useRef(0)
-  const activeChapterRef = useRef<string | null>(null)
-  const watchedChaptersRef = useRef<Set<string>>(new Set())
+  const activeChapterRef = useRef<number | null>(null)
+  const watchedChaptersRef = useRef<Set<number>>(new Set())
 
   useImperativeHandle(ref, () => ({
     seekTo(seconds: number) {
@@ -66,14 +66,14 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
 
     if (chapters.length > 0) {
       const current = chapters.find((c) => now >= c.startSeconds && now < c.endSeconds) ?? null
-      if (current?.slug !== activeChapterRef.current) {
-        activeChapterRef.current = current?.slug ?? null
-        onActiveChapterChange?.(current?.slug ?? null)
+      if (current?.order !== activeChapterRef.current) {
+        activeChapterRef.current = current?.order ?? null
+        onActiveChapterChange?.(current?.order ?? null)
       }
       for (const chapter of chapters) {
-        if (now >= chapter.endSeconds && !watchedChaptersRef.current.has(chapter.slug)) {
-          watchedChaptersRef.current.add(chapter.slug)
-          onChapterWatched?.(chapter.slug)
+        if (now >= chapter.endSeconds && !watchedChaptersRef.current.has(chapter.order)) {
+          watchedChaptersRef.current.add(chapter.order)
+          onChapterWatched?.(chapter.order)
         }
       }
     }

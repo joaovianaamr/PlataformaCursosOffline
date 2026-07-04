@@ -1,4 +1,4 @@
-import { Navigate, useNavigate, useParams, Link } from 'react-router-dom'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useModuleDetail } from '@/hooks/useModuleDetail'
 import { useProgress } from '@/hooks/useProgress'
 import { VideoPlayer } from '@/components/lesson/VideoPlayer'
@@ -88,13 +88,7 @@ export function LessonPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link
-          to={modulePathUrl}
-          className="font-mono text-xs uppercase tracking-wide text-accent hover:text-accent-hover"
-        >
-          ← voltar ao módulo
-        </Link>
-        <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-text sm:text-3xl">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-text sm:text-3xl">
           {lesson.title}
         </h1>
       </div>

@@ -13,7 +13,9 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 RUN apk add --no-cache curl && \
-    addgroup -S spring && adduser -S spring -G spring
+    addgroup -S spring && adduser -S spring -G spring && \
+    mkdir -p /videos/UniversoNarrado && \
+    chown -R spring:spring /videos
 USER spring:spring
 
 COPY --from=build /app/target/*.jar app.jar
